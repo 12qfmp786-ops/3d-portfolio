@@ -3,13 +3,14 @@ import { LoadingProvider } from "@/app/components/context/LoadingProvider";
 import { useDevInitialFX } from "@/app/components/hooks/useDevInitialFX";
 import Landing from "@/app/components/utils/Landing";
 import Navbar from "@/app/components/utils/navbar";
-import WhatIDo from "@/app/components/utils/WhatIDo";
+import WhatIDo from "@/app/components/utils/whatido";
 import "@/app/components/index.css";
 import MainContainer from "@/app/components/utils/MainContainer";
 import Career from "@/app/components/utils/Career";
 import SocialIcons from "@/app/components/utils/SocialIcons";
 import Contact from "@/app/components/utils/Contact";
 import Projects from "@/app/components/utils/projects"
+ import AnimatedBackground from "@/app/components/animated-background";
 
 export default function Home() {
   useDevInitialFX();
@@ -20,6 +21,7 @@ export default function Home() {
         <div id="smooth-wrapper">
           <div id="smooth-content">
             <Landing>
+              {/* <AnimatedBackground /> */}
               <Navbar />
               <MainContainer />
             </Landing>

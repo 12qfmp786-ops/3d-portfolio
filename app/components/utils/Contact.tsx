@@ -5,11 +5,13 @@ const Contact = () => {
     return (
         <div className="contact-section section-container" id="contact">
             <div className="contact-container">
-            <h3>Contact</h3>
-       
+         
+
                 <div className="contact-flex">
+
                     <div className="contact-box">
-    
+                    <h3>CONTACT</h3>
+
                         <h4>Email</h4>
                         <p>
                             <a href="mailto:example@mail.com" data-cursor="disable">

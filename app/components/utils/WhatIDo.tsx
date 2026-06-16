@@ -6,9 +6,11 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const WhatIDo = () => {
   const containerRef = useRef<(HTMLDivElement | null)[]>([]);
+
   const setRef = (el: HTMLDivElement | null, index: number) => {
     containerRef.current[index] = el;
   };
+
   useEffect(() => {
     if (ScrollTrigger.isTouch) {
       containerRef.current.forEach((container) => {
@@ -18,16 +20,20 @@ const WhatIDo = () => {
         }
       });
     }
+
     return () => {
       containerRef.current.forEach((container) => {
         if (container) {
-          container.removeEventListener("click", () => handleClick(container));
+          container.removeEventListener("click", () =>
+            handleClick(container)
+          );
         }
       });
     };
   }, []);
+
   return (
-    <div className="whatIDO">
+    <section id="skills" className="whatIDO">
       <div className="what-box">
         <h2 className="title">
           W<span className="hat-h2">HAT</span>
@@ -36,6 +42,7 @@ const WhatIDo = () => {
           </div>
         </h2>
       </div>
+
       <div className="what-box">
         <div className="what-box-in">
           <div className="what-border2">
@@ -60,6 +67,7 @@ const WhatIDo = () => {
               />
             </svg>
           </div>
+
           <div
             className="what-content what-noTouch"
             ref={(el) => setRef(el, 0)}
@@ -86,14 +94,18 @@ const WhatIDo = () => {
                 />
               </svg>
             </div>
+
             <div className="what-corner"></div>
 
             <div className="what-content-in">
               <h3>DEVELOPMENT</h3>
               <h4>Description</h4>
               <p>
-              I'm a skilled software developer with experience in TypeScript and JavaScript, and expertise in frameworks like React, Node.js, and Three.js.
+                I'm a skilled software developer with experience in TypeScript
+                and JavaScript, and expertise in frameworks like React, Node.js,
+                and Three.js.
               </p>
+
               <h5>Skillset & tools</h5>
               <div className="what-content-flex">
                 <div className="what-tags">JavaScript</div>
@@ -107,9 +119,11 @@ const WhatIDo = () => {
                 <div className="what-tags">PHP</div>
                 <div className="what-tags">MySql</div>
               </div>
+
               <div className="what-arrow"></div>
             </div>
           </div>
+
           <div
             className="what-content what-noTouch"
             ref={(el) => setRef(el, 1)}
@@ -127,13 +141,17 @@ const WhatIDo = () => {
                 />
               </svg>
             </div>
+
             <div className="what-corner"></div>
+
             <div className="what-content-in">
               <h3>CREATE</h3>
               <h4>Description</h4>
               <p>
-              I create responsive, user-friendly, and visually appealing digital experiences.
+                I create responsive, user-friendly, and visually appealing
+                digital experiences.
               </p>
+
               <h5>Skillset & tools</h5>
               <div className="what-content-flex">
                 <div className="what-tags">UI Design</div>
@@ -145,12 +163,13 @@ const WhatIDo = () => {
                 <div className="what-tags">Performance Optimization</div>
                 <div className="what-tags">Accessibility</div>
               </div>
+
               <div className="what-arrow"></div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
@@ -159,6 +178,7 @@ export default WhatIDo;
 function handleClick(container: HTMLDivElement) {
   container.classList.toggle("what-content-active");
   container.classList.remove("what-sibling");
+
   if (container.parentElement) {
     const siblings = Array.from(container.parentElement.children);
 

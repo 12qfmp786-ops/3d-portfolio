@@ -18,18 +18,22 @@ import { SectionHeader } from "./section-header";
 
 const ProjectsSection = () => {
   return (
-    <section id="projects" className="section-container relative w-full py-20 md:min-h-[130vh]">
+    
+    <section id="projects" className="section-container relative w-full py-40 md:min-h-[80vh]">
+         
       <SectionHeader
         id="projects"
         title="Projects"
-        className="mb-12 md:mb-16 mt-0"
+        className="mb-120 md:mb-160 mt-10"
       />
-      <div className="grid w-full grid-cols-1 place-items-center gap-8 sm:grid-cols-2 xl:grid-cols-3">
-        {projects.map((project) => (
-          <ProjectCard key={project.id} project={project} />
-        ))}
-      </div>
-    </section>
+   
+     
+     <div className="grid w-full grid-cols-1 place-items-center gap-8 sm:grid-cols-2 xl:grid-cols-3 mt-20">
+     {projects.map((project) => (
+       <ProjectCard key={project.id} project={project} />
+     ))}
+   </div>
+   </section>
   );
 };
 
@@ -56,7 +60,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
             <div className="absolute w-full h-1/2 bottom-0 left-0 bg-gradient-to-t from-background via-background/85 to-transparent pointer-events-none">
               <div className="flex flex-col h-full items-start justify-end p-6">
                 <div className="text-lg text-left">{project.title}</div>
-                <div className="text-xs bg-primary text-primary-foreground rounded-lg w-fit px-2">
+                <div className="text-xs  rounded-lg w-fit px-12">
                   {project.category}
                 </div>
               </div>
@@ -75,24 +79,9 @@ const ProjectCard = ({ project }: { project: Project }) => {
                 <span className="shrink-0 text-[11px] uppercase tracking-widest text-muted-foreground border border-border rounded-full px-3 py-0.5">
                   {project.category}
                 </span>
+             
               </div>
-              <div className="shrink-0 flex items-center gap-4">
-                {project.github && (
-                  <Link
-                    href={project.github}
-                    target="_blank"
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
-                  >
-                    Source
-                  </Link>
-                )}
-                <Link href={project.live} target="_blank">
-                  <button className="group flex items-center gap-2 bg-primary text-primary-foreground text-sm font-medium px-4 py-1.5 rounded-full hover:bg-primary/80 transition-colors">
-                    Visit
-                    <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                  </button>
-                </Link>
-              </div>
+            
             </div>
           </div>
 

@@ -10,6 +10,7 @@ gsap.registerPlugin(ScrollSmoother, ScrollTrigger);
 export let smoother: ScrollSmoother;
 
 const Navbar = () => {
+  if (smoother) return null;
   useEffect(() => {
     smoother = ScrollSmoother.create({
       wrapper: "#smooth-wrapper",
@@ -39,6 +40,7 @@ const Navbar = () => {
     window.addEventListener("resize", () => {
       ScrollSmoother.refresh(true);
     });
+
   }, []);
   return (
     <>
@@ -62,12 +64,12 @@ const Navbar = () => {
             </a>
           </li>
           <li>
-            <a data-href="#about" href="#about">
+            <a data-href="#WhatIDO" href="#about">
               <HoverLinks text="ABOUT" />
             </a>
           </li>
           <li>
-            <a data-href="#work" href="#work">
+            <a data-href="#projects" href="#work">
               <HoverLinks text="WORK" />
             </a>
           </li>
