@@ -10,7 +10,7 @@ import Career from "@/app/components/utils/Career";
 import SocialIcons from "@/app/components/utils/SocialIcons";
 import Contact from "@/app/components/utils/Contact";
 import Projects from "@/app/components/utils/projects"
- import AnimatedBackground from "@/app/components/animated-background";
+//  import AnimatedBackground from "@/app/components/animated-background";
 
 export default function Home() {
   useDevInitialFX();
