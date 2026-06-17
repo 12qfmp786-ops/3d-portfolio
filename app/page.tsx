@@ -3,7 +3,7 @@ import { LoadingProvider } from "@/app/components/context/LoadingProvider";
 import { useDevInitialFX } from "@/app/components/hooks/useDevInitialFX";
 import Landing from "@/app/components/utils/Landing";
 import Navbar from "@/app/components/utils/navbar";
-import WhatIDo from "@/app/components/utils/whatido";
+import WhatIDo from "@/app/components/utils/WhatIDo";
 import "@/app/components/index.css";
 import MainContainer from "@/app/components/utils/MainContainer";
 import Career from "@/app/components/utils/Career";
