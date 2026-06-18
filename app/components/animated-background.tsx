@@ -7,8 +7,7 @@ const Spline = React.lazy(() => import("@splinetool/react-spline"));
 import { Skill, SkillNames, SKILLS } from "@/app/components/data/constants";
 import { sleep } from "@/app/components/lib/utils";
 import { useMediaQuery } from "@/app/components/hooks/use-media-query";
-import { usePreloader } from "@/app/components/preloader";
-import { useTheme } from "next-themes";
+import { useLoading } from "@/app/components/context/LoadingProvider";
 import { Section, getKeyboardState } from "@/app/components/animated-background-config";
 import { useSounds } from "@/app/components/hooks/use-sounds";
 import { usePerfProfile } from "@/app/components/hooks/use-perf-profile";
@@ -17,6 +16,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 function setSplineVariable(app: Application, name: string, value: string) {
   try {
+    if (app.getVariable(name) === undefined) return;
     app.setVariable(name, value);
   } catch {
     /* variable not defined in scene export */
@@ -24,8 +24,7 @@ function setSplineVariable(app: Application, name: string, value: string) {
 }
 
 const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
-  const { isLoading, bypassLoading } = usePreloader();
-  const { theme } = useTheme();
+  const { isLoading } = useLoading();
   const isMobile = useMediaQuery("(max-width: 767px)");
   const splineContainer = useRef<HTMLDivElement>(null);
   const [splineApp, setSplineApp] = useState<Application>();
@@ -129,9 +128,16 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
           gsap.to(kbd.position, { ...state.position, duration: 1 });
           gsap.to(kbd.rotation, { ...state.rotation, duration: 1 });
         },
+        onEnterBack: () => {
+          setActiveSection(targetSection);
+          const state = getKeyboardState({ section: targetSection, isMobile });
+          gsap.to(kbd.scale, { ...state.scale, duration: 1 });
+          gsap.to(kbd.position, { ...state.position, duration: 1 });
+          gsap.to(kbd.rotation, { ...state.rotation, duration: 1 });
+        },
         onLeaveBack: () => {
           setActiveSection(prevSection);
-          const state = getKeyboardState({ section: prevSection, isMobile, });
+          const state = getKeyboardState({ section: prevSection, isMobile });
           gsap.to(kbd.scale, { ...state.scale, duration: 1 });
           gsap.to(kbd.position, { ...state.position, duration: 1 });
           gsap.to(kbd.rotation, { ...state.rotation, duration: 1 });
@@ -149,11 +155,14 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     const heroState = getKeyboardState({ section: "hero", isMobile });
     gsap.set(kbd.scale, heroState.scale);
     gsap.set(kbd.position, heroState.position);
+    gsap.set(kbd.rotation, heroState.rotation);
 
     // Section transitions
     return [
+      createSectionTimeline("#hero", "hero", "hero", "top top", "bottom 40%"),
       createSectionTimeline("#skills", "skills", "hero"),
-      createSectionTimeline("#projects", "projects", "skills", "top 70%"),
+      createSectionTimeline("#experience", "experience", "skills"),
+      createSectionTimeline("#projects", "projects", "experience", "top 70%"),
       createSectionTimeline("#contact", "contact", "projects", "top 30%"),
     ].filter(Boolean) as gsap.core.Timeline[];
   };
@@ -294,6 +303,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     const timelines = setupScrollAnimations();
     bongoAnimationRef.current = getBongoAnimation();
     keycapAnimationsRef.current = getKeycapsAnimation();
+    ScrollTrigger.refresh(true);
     return () => {
       bongoAnimationRef.current?.stop()
       keycapAnimationsRef.current?.stop()
@@ -331,16 +341,12 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
     if (activeSection !== "skills") {
       setVisibility(false, false, false, false);
-    } else if (theme === "dark") {
-      isMobile
-        ? setVisibility(false, false, false, true)
-        : setVisibility(false, true, false, false);
     } else {
       isMobile
         ? setVisibility(false, false, true, false)
         : setVisibility(true, false, false, false);
     }
-  }, [theme, splineApp, isMobile, activeSection]);
+  }, [splineApp, isMobile, activeSection]);
 
   useEffect(() => {
     if (!selectedSkill || !splineApp) return;
@@ -359,14 +365,14 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
     if (kbd) {
       rotateKeyboard = gsap.to(kbd.rotation, {
-        y: Math.PI * 2 + kbd.rotation.y,
-        duration: 10,
+        y: kbd.rotation.y + Math.PI / 8,
+        duration: 20,
         repeat: -1,
         yoyo: true,
         yoyoEase: true,
-        ease: "back.inOut",
+        ease: "sine.inOut",
         delay: 2.5,
-        paused: true, // Start paused
+        paused: true,
       });
 
       teardownKeyboard = gsap.fromTo(
@@ -432,6 +438,13 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     };
   }, [activeSection, splineApp]);
 
+  useEffect(() => {
+    document.body.dataset.keyboardSection = activeSection;
+    return () => {
+      delete document.body.dataset.keyboardSection;
+    };
+  }, [activeSection]);
+
   // Reveal keyboard on load/route change
   useEffect(() => {
     // Rebuild the URL from the current pathname so the hash is always *replaced*
@@ -455,10 +468,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     return capSplinePixelRatio(splineApp, maxDpr);
   }, [splineApp, maxDpr]);
 
-  // Pause the entire WebGL render loop (and the keyboard's infinite tweens /
-  // bongo-cat interval, which are only visible through it) while the tab is
-  // hidden. Spline keeps rendering at full tilt in a background tab otherwise —
-  // a pointless, continuous GPU/battery drain.
+  // Pause WebGL while the tab is hidden (reference behaviour)
   useEffect(() => {
     if (!splineApp) return;
     const onVisibility = () => {
@@ -470,17 +480,20 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   }, [splineApp]);
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <Spline
-        className="w-full h-full fixed"
-        ref={splineContainer}
-        onLoad={(app: Application) => {
-          setSplineApp(app);
-          bypassLoading();
-        }}
-        scene="/assets/skills-keyboard.splinecode"
-      />
-    </Suspense>
+    <div className="keyboard-scene">
+      <Suspense fallback={null}>
+        <Spline
+          className="pointer-events-auto h-full w-full"
+          ref={splineContainer}
+          renderOnDemand
+          onLoad={(app: Application) => {
+            setSplineApp(app);
+            requestAnimationFrame(() => ScrollTrigger.refresh(true));
+          }}
+          scene="/assets/skills-keyboard.splinecode"
+        />
+      </Suspense>
+    </div>
   );
 };
 

@@ -82,8 +82,21 @@ body {
   width: 100%;
 }
 
+#smooth-wrapper {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
 #smooth-content {
   width: 100%;
+  position: relative;
+}
+
+/* Non-landing sections: entire scroll layer above the fixed keyboard */
+body:not([data-keyboard-section="hero"]) #smooth-content {
+  z-index: 2;
 }
 
 .section-container {
@@ -122,6 +135,52 @@ body {
   white-space: nowrap;
   flex-wrap: nowrap;
   color: inherit;
+}
+
+.keyboard-scene {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100svh;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.keyboard-scene canvas {
+  pointer-events: auto;
+}
+
+/* Hero: keyboard in front, centered, fully interactive */
+body[data-keyboard-section="hero"] .keyboard-scene {
+  z-index: 5;
+}
+
+body[data-keyboard-section="hero"] .landing-intro,
+body[data-keyboard-section="hero"] .landing-info {
+  z-index: 2;
+}
+
+/* All other sections: keyboard behind content */
+body:not([data-keyboard-section="hero"]) .keyboard-scene {
+  z-index: 1;
+}
+
+/* Skills, career, projects, contact: content above keyboard */
+#smooth-content > section,
+#smooth-content > .whatIDO,
+#smooth-content > .career-section,
+#smooth-content > .contact-section,
+#smooth-content > .landing-section {
+  position: relative;
+  z-index: 2;
+}
+
+#smooth-content > .whatIDO .what-box,
+#smooth-content > .career-section .career-container,
+#smooth-content > .contact-section .contact-container,
+#smooth-content > section#projects {
+  position: relative;
+  z-index: 3;
 }
 
 .techstack {

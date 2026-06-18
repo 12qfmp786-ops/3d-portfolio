@@ -10,7 +10,7 @@ import Career from "@/app/components/utils/Career";
 import SocialIcons from "@/app/components/utils/SocialIcons";
 import Contact from "@/app/components/utils/Contact";
 import Projects from "@/app/components/utils/projects"
-//  import AnimatedBackground from "@/app/components/animated-background";
+import AnimatedBackground from "@/app/components/animated-background";
 
 export default function Home() {
   useDevInitialFX();
@@ -19,9 +19,9 @@ export default function Home() {
     <div className="flex flex-col flex-1 items-center justify-center bg-black font-sans dark:bg-black">
       <LoadingProvider>
         <div id="smooth-wrapper">
+          <AnimatedBackground />
           <div id="smooth-content">
             <Landing>
-              {/* <AnimatedBackground /> */}
               <Navbar />
               <MainContainer />
             </Landing>

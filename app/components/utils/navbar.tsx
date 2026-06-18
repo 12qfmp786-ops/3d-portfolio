@@ -15,15 +15,17 @@ const Navbar = () => {
     smoother = ScrollSmoother.create({
       wrapper: "#smooth-wrapper",
       content: "#smooth-content",
-      smooth: 1.7,
-      speed: 1.7,
-      effects: true,
+      smooth: 0.8,
+      speed: 1,
+      effects: false,
       autoResize: true,
       ignoreMobileResize: true,
     });
 
     smoother.scrollTop(0);
     smoother.paused(true);
+
+    requestAnimationFrame(() => ScrollTrigger.refresh(true));
 
     let links = document.querySelectorAll(".header ul a");
     links.forEach((elem) => {

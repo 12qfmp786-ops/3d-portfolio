@@ -3,13 +3,13 @@ export type Section = "hero" | "about" | "skills" | "experience" | "projects" | 
 export const STATES = {
   hero: {
     desktop: {
-      scale: { x: 0.20, y: 0.20, z: 0.20 },
-      position: { x: 225, y: -100, z: 0 },
+      scale: { x: 0.32, y: 0.32, z: 0.32 },
+      position: { x: 0, y: -20, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
     },
     mobile: {
       scale: { x: 0.30, y: 0.30, z: 0.30 },
-      position: { x: 0, y: -200, z: 0 },
+      position: { x: 0, y: -120, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
     },
   },
@@ -135,9 +135,9 @@ export const getKeyboardState = ({
       ? width / MOBILE_REF_WIDTH
       : width / DESKTOP_REF_WIDTH;
 
-    // Clamp values to prevent extremes
-    const minScale = isMobile ? 0.5 : 0.5;
-    const maxScale = isMobile ? 0.6 : 1.15;
+    // Clamp values to prevent extremes (tighter on 13" laptops)
+    const minScale = isMobile ? 0.5 : 0.65;
+    const maxScale = isMobile ? 0.65 : 1.0;
 
     return Math.min(Math.max(targetScale, minScale), maxScale);
   };
