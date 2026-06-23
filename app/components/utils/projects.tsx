@@ -4,6 +4,8 @@ import React from "react";
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogTitle,
   ResponsiveDialogTrigger,
 } from "@/app/components/ui/responsive-dialog";
 import { FloatingDock } from "@/app/components/ui/floating-dock";
@@ -19,12 +21,12 @@ import { SectionHeader } from "./section-header";
 const ProjectsSection = () => {
   return (
     
-    <section id="projects" className="section-container relative w-full py-40 md:min-h-[80vh]">
+    <section id="projects" className="section-container relative w-full py-40 md:min-h-[80vh] ">
          
       <SectionHeader
         id="projects"
         title="Projects"
-        className="mb-120 md:mb-160 mt-10"
+        className="mb-120 md:mb-160 mt-10 !pb-13"
       />
    
      
@@ -59,8 +61,8 @@ const ProjectCard = ({ project }: { project: Project }) => {
             />
             <div className="absolute w-full h-1/2 bottom-0 left-0 bg-gradient-to-t from-background via-background/85 to-transparent pointer-events-none">
               <div className="flex flex-col h-full items-start justify-end p-6">
-                <div className="text-lg text-left">{project.title}</div>
-                <div className="text-xs  rounded-lg w-fit px-12">
+                <div className="text-lg text-left !ml-2">{project.title}</div>
+                <div className="text-xs  rounded-lg w-fit px-12 !ml-2 !pb-2">
                   {project.category}
                 </div>
               </div>
@@ -73,14 +75,17 @@ const ProjectCard = ({ project }: { project: Project }) => {
           <div className="shrink-0 border-b border-border bg-background/80 backdrop-blur-sm px-8 py-5">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4 min-w-0">
-                <h4 className="font-display text-xl md:text-2xl font-bold text-foreground tracking-tight truncate">
+                <ResponsiveDialogTitle className="font-display text-xl md:text-2xl font-bold text-foreground tracking-tight truncate !mb-3 !mt-3 !pl-3">
                   {project.title}
-                </h4>
-                <span className="shrink-0 text-[11px] uppercase tracking-widest text-muted-foreground border border-border rounded-full px-3 py-0.5">
+                </ResponsiveDialogTitle>
+                <span className="shrink-0 text-[11px] uppercase tracking-widest text-muted-foreground border border-border rounded-full px-3 py-0.5 !mb-3 !mt-3">
                   {project.category}
                 </span>
              
               </div>
+              <ResponsiveDialogDescription className="sr-only">
+                {`${project.title} — ${project.category} project details`}
+              </ResponsiveDialogDescription>
             
             </div>
           </div>
@@ -96,7 +101,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
                 className="flex flex-col md:flex-row gap-6 md:gap-10 mb-10"
               >
                 {project.skills.frontend?.length > 0 && (
-                  <div className="flex flex-col items-center md:items-start gap-2">
+                  <div className="flex flex-col items-center md:items-start gap-2 !mb-3 !mt-3 !pl-3">
                     <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
                       Frontend
                     </span>
@@ -104,7 +109,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
                   </div>
                 )}
                 {project.skills.backend?.length > 0 && (
-                  <div className="flex flex-col items-center md:items-start gap-2">
+                  <div className="flex flex-col items-center md:items-start gap-2 !mb-3 !mt-3 !pl-3">
                     <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
                       Backend
                     </span>
@@ -121,6 +126,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
+                className="[&_p]:my-4 [&_h3]:mt-10 [&_h3]:mb-4"
               >
                 {project.content}
               </motion.div>

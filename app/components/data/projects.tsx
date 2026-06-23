@@ -32,16 +32,16 @@ const BASE_PATH = "/assets/project-screenshots";
 
 const ProjectsLinks = ({ live, repo }: { live: string; repo?: string }) => {
   return (
-    <div className="flex flex-col md:flex-row items-center justify-start gap-3 my-13 mb-8">
+    <div className="flex flex-col md:flex-row items-center justify-start gap-3 my-13 mb-8 !pl-3">
       <Link
-        className="font-mono underline flex gap-2"
+        className="font-mono underline flex gap-6"
         rel="noopener"
         target="_new"
         href={live}
       >
-        <Button variant={"default"} >
+        <Button variant={"default"} className="gap-2 !pl-3" >
           Visit Website
-          <ArrowUpRight className=" w-15 h-5" />
+          <ArrowUpRight className=" w-15 h-5 !mr-3" />
         </Button>
       </Link>
       {repo && (
@@ -256,22 +256,21 @@ const projects: Project[] = [
       ],
     },
     live: "https://www.codingducks.xyz/",
-    // github: "https://github.com/Naresh-Khatri/Coding-Ducks",
     get content() {
       return (
         <div>
-          <TypographyP className="font-mono text-2xl text-center">
+          <TypographyP className="font-mono text-2xl text-center !mt-4">
             Coding ducks = LeetCode + CodePen + CSS Battles
           </TypographyP>
-          <TypographyP className="font-mono ">
+          <p className="font-mono pb-10 !mt-5 !mb-10 !pl-3">
             Coding Ducks is your coding dojo — where you level up your skills,
             battle in real-time code duels, and earn badges like a true code
             warrior. Track your progress, flex your brain, and climb the
             leaderboard. Ready to quack the code?
-          </TypographyP>
-          <ProjectsLinks live={this.live} repo={this.github} />
-          <TypographyH3 className="my-14 mt-18">Problems </TypographyH3>
-          <p className="font-mono mb-2">
+          </p>
+          <ProjectsLinks  live={this.live} repo={this.github} />
+          <TypographyH3 className="my-14 mt-32 !pb-5 !pt-10 !pl-3">Problems </TypographyH3>
+          <p className="font-mono mb-2 !pl-3 !mb-5">
             Solve coding problems similar to LeetCode, enhancing your
             problem-solving skills across various languages.
           </p>
@@ -281,8 +280,8 @@ const projects: Project[] = [
               `${BASE_PATH}/codingducks/problem.png`,
             ]}
           />
-          <TypographyH3 className="my-4 mt-8">Ducklets</TypographyH3>
-          <p className="font-mono mb-2">
+          <TypographyH3 className="my-4 !mt-8">Ducklets</TypographyH3>
+          <p className="font-mono !mb-5">
             Collaborate in real-time with others in a multiplayer coding
             environment, just like CodePen but with a social twist.
           </p>
@@ -293,9 +292,9 @@ const projects: Project[] = [
               `${BASE_PATH}/codingducks/ducklet2.png`,
             ]}
           />
-          <TypographyH3 className="my-4 mt-8">UI Battles </TypographyH3>
+          <TypographyH3 className="my-4 !mt-8">UI Battles </TypographyH3>
 
-          <p className="font-mono mb-2">
+          <p className="font-mono !mb-5">
             Challenge yourself to create UI components with HTML/CSS/JS, and get
             instant feedback with an automated similarity scoring.
           </p>
@@ -306,21 +305,21 @@ const projects: Project[] = [
               `${BASE_PATH}/codingducks/css-battle2.png`,
             ]}
           />
-          <TypographyH3 className="my-4 mt-8">Contests </TypographyH3>
-          <p className="font-mono mb-2">
+          <TypographyH3 className="my-4 !mt-8">Contests </TypographyH3>
+          <p className="font-mono !mb-5">
             Organize or participate in coding competitions. Successfully used to
             host three contests during college.
           </p>
           <SlideShow images={[`${BASE_PATH}/codingducks/contests.png`]} />
-          <TypographyH3 className="my-4 mt-8">Playground </TypographyH3>
-          <p className="font-mono mb-2">
+          <TypographyH3 className="my-4 !mt-8">Playground </TypographyH3>
+          <p className="font-mono !mb-5">
             Test and execute your code instantly in my versatile online code
             runner.
           </p>
           <SlideShow images={[`${BASE_PATH}/codingducks/playground.png`]} />
-          <TypographyH3 className="my-4 mt-8">Users</TypographyH3>
+          <TypographyH3 className="my-4 !mt-8">Users</TypographyH3>
 
-          <p className="font-mono mb-2">
+          <p className="font-mono !mb-5">
             Track your progress, earn badges, and climb the rankings with
             detailed user profiles and activity tracking.
           </p>
@@ -339,8 +338,8 @@ const projects: Project[] = [
     id: "portfolio",
     category: "Portfolio",
     title: "My Portfolio",
-    src: "/assets/projects-screenshots/portfolio/landing.png",
-    screenshots: ["landing.png"],
+    src: "/assets/project-screenshots/portfolio/image_copy.png",
+    screenshots: ["image_copy.png"],
     live: "http://nareshkhatri.vercel.app",
     github:"https://github.com/Naresh-Khatri/Portfolio",
     skills: {
@@ -358,15 +357,15 @@ const projects: Project[] = [
     get content() {
       return (
         <div>
-          <TypographyP className="font-mono ">
+          <TypographyP className="font-mono !mb-5 !mt-5 !pl-3">
             Welcome to my digital playground, where creativity meets code in the
             dopest way possible.
           </TypographyP>
           <ProjectsLinks live={this.live} repo={this.github} />
-          <TypographyH3 className="my-4 mt-8">
+          <TypographyH3 className="my-4 !mt-8 !pl-3">
             Beautiful 3D Objects{" "}
           </TypographyH3>
-          <p className="font-mono mb-2">
+          <p className="font-mono !mb-5 !mt-5 !pl-3">
             Did you see that 3D keyboard modal? Yeah! I made that. That
             interactive keyboard is being rendered in 3D on a webpage 🤯, and
             pressing each keycap reveals a skill in a goofy way. It&apos;s like
@@ -374,27 +373,27 @@ const projects: Project[] = [
           </p>
           <SlideShow
             images={[
-              `${BASE_PATH}/portfolio/landing.png`,
-              `${BASE_PATH}/portfolio/skills.png`,
+              `${BASE_PATH}/portfolio/image_copy.png`,
+              `${BASE_PATH}/portfolio/skills_section.png`,
             ]}
           />
-          <TypographyH3 className="my-4 ">Space Theme</TypographyH3>
-          <p className="font-mono mb-2">
+          <TypographyH3 className="my-4 !mt-5 !pl-3">Space Theme</TypographyH3>
+          <p className="font-mono !mb-5 !mt-5 !pl-3">
             Dark background + floating particles = out-of-this-world cool.
           </p>
-          <SlideShow images={[`${BASE_PATH}/portfolio/navbar.png`]} />
-          <TypographyH3 className="my-4 mt-8">Projects</TypographyH3>
+          <SlideShow images={[`${BASE_PATH}/portfolio/skills_section.png`]} />
+          <TypographyH3 className="my-4 !mt-8 !pl-3">Projects</TypographyH3>
 
-          <p className="font-mono mb-2">
+          <p className="font-mono !mb-5 !mt-5 !pl-3">
             My top personal and freelance projects — no filler, all killer.
           </p>
           <SlideShow
             images={[
-              `${BASE_PATH}/portfolio/projects.png`,
-              `${BASE_PATH}/portfolio/project.png`,
+              `${BASE_PATH}/portfolio/image.png`,
+              `${BASE_PATH}/portfolio/project_dialog.png`,
             ]}
           />
-          <p className="font-mono mb-2 mt-8 text-center">
+          <p className="font-mono mb-2 mt-8 text-center !pl-3">
             This site&apos;s not just a portfolio — it&apos;s a whole vibe.
           </p>
         </div>
@@ -416,7 +415,7 @@ const projects: Project[] = [
     get content() {
       return (
         <div>
-          <TypographyP className="font-mono ">
+          <TypographyP className="font-mono !mb-5 !mt-5 !pl-3">
             Ghostchat is your go-to spot for sending anonymous messages without
             leaving a trace. Powered by Supabase, it&apos;s all about keeping things
             low-key and secure. Whether you&apos;re sharing secrets, giving feedback,
@@ -425,6 +424,7 @@ const projects: Project[] = [
             worry.
           </TypographyP>
           <ProjectsLinks live={this.live} repo={this.github} />
+          <TypographyH3 className="my-4 !mt-8 !pl-3 !mb-5">Features</TypographyH3>
           <SlideShow
             images={[
               `${BASE_PATH}/ghostchat/1.png`,

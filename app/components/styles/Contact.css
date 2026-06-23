@@ -127,6 +127,15 @@ a.contact-social {
 }
 
 @media only screen and (max-width: 900px) {
+    .contact-section h3 {
+        margin-top: 0;
+        min-height: auto;
+        display: block;
+        font-size: 34px;
+        text-align: left;
+        margin-bottom: 10px;
+    }
+
     .contact-flex {
         flex-direction: column;
         gap: 40px;

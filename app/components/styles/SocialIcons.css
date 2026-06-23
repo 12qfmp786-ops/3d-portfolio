@@ -102,6 +102,22 @@ div.resume-button span {
     }
 }
 
+@media only screen and (max-width: 767px) {
+    .resume-button {
+        right: 6px;
+        bottom: 28px;
+        letter-spacing: 2px;
+        font-size: 13px;
+        line-height: 13px;
+        transform: rotate(-90deg);
+        transform-origin: right center;
+    }
+
+    div.resume-button span {
+        font-size: 15px;
+    }
+}
+
 @media only screen and (min-width: 768px) {
     .resume-button {
         transform: none;

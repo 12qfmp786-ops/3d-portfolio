@@ -4,7 +4,7 @@ export const STATES = {
   hero: {
     desktop: {
       scale: { x: 0.32, y: 0.32, z: 0.32 },
-      position: { x: 0, y: -20, z: 0 },
+      position: { x: 400, y: -20, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
     },
     mobile: {
