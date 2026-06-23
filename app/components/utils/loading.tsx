@@ -109,7 +109,7 @@ export const setProgress = (setLoading: (value: number) => void) => {
         clearInterval(finishInterval);
         finishInterval = null;
       }
-    }, 40);
+    }, 400);
   }
 
   interval = setInterval(() => {
