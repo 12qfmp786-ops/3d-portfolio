@@ -3,13 +3,8 @@ export type Section = "hero" | "about" | "skills" | "experience" | "projects" | 
 export const STATES = {
   hero: {
     desktop: {
-<<<<<<< Updated upstream
       scale: { x: 0.20, y: 0.20, z: 0.20 },
       position: { x: 225, y: -100, z: 0 },
-=======
-      scale: { x: 0.32, y: 0.32, z: 0.32 },
-      position: { x: 300, y: -140, z: 0 },
->>>>>>> Stashed changes
       rotation: { x: 0, y: 0, z: 0 },
     },
     mobile: {
