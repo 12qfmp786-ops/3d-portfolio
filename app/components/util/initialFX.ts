@@ -1,12 +1,12 @@
-import { SplitText } from "gsap/SplitText";
 import gsap from "gsap";
-import { smoother } from "@/app/components/utils/navbar";
+import { SplitText } from "gsap/SplitText";
+import { unpauseScrollSmoother } from "@/app/components/util/navScroll";
 
 gsap.registerPlugin(SplitText);
 
 export function initialFX() {
   document.body.style.overflowY = "auto";
-  smoother?.paused(false);
+  unpauseScrollSmoother();
   gsap.set("body", { backgroundColor: "#0b080c" });
 
   var landingText = new SplitText(

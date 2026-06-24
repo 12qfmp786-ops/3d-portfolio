@@ -151,9 +151,9 @@ body:not([data-keyboard-section="hero"]) #smooth-content {
   pointer-events: auto;
 }
 
-/* Hero: keyboard in front, centered, fully interactive */
+/* Hero: keyboard in front of landing text, but below the fixed navbar */
 body[data-keyboard-section="hero"] .keyboard-scene {
-  z-index: 5;
+  z-index: 4;
 }
 
 body[data-keyboard-section="hero"] .landing-intro,

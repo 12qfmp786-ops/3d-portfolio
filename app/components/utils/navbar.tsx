@@ -1,85 +1,57 @@
-import { useEffect } from "react";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { MouseEvent } from "react";
 import HoverLinks from "@/app/components/utils/HoverLinks";
-import { gsap } from "gsap";
-import { ScrollSmoother } from "gsap/ScrollSmoother";
 import "../styles/Navbar.css";
 import Block from "./Block";
+import { scrollToSection } from "@/app/components/util/navScroll";
 
-gsap.registerPlugin(ScrollSmoother, ScrollTrigger);
-export let smoother: ScrollSmoother;
+const NAV_LINKS = [
+  { label: "CAREER", href: "#experience" },
+  { label: "ABOUT", href: "#skills" },
+  { label: "WORK", href: "#projects" },
+  { label: "CONTACT", href: "#contact" },
+] as const;
 
 const Navbar = () => {
-  if (smoother) return null;
-  useEffect(() => {
-    smoother = ScrollSmoother.create({
-      wrapper: "#smooth-wrapper",
-      content: "#smooth-content",
-      smooth: 0.8,
-      speed: 1,
-      effects: false,
-      autoResize: true,
-      ignoreMobileResize: true,
-    });
+  const handleNavClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const target = event.currentTarget.getAttribute("data-href");
+    if (target) scrollToSection(target);
+  };
 
-    smoother.scrollTop(0);
-    smoother.paused(true);
+  const handleLogoClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    scrollToSection("#hero");
+  };
 
-    requestAnimationFrame(() => ScrollTrigger.refresh(true));
-
-    let links = document.querySelectorAll(".header ul a");
-    links.forEach((elem) => {
-      let element = elem as HTMLAnchorElement;
-      element.addEventListener("click", (e) => {
-        if (window.innerWidth > 1024) {
-          e.preventDefault();
-          let elem = e.currentTarget as HTMLAnchorElement;
-          let section = elem.getAttribute("data-href");
-          smoother.scrollTo(section, true, "top top");
-        }
-      });
-    });
-    window.addEventListener("resize", () => {
-      ScrollSmoother.refresh(true);
-    });
-
-  }, []);
   return (
     <>
       <div className="header flex justify-between items-start">
-        <a href="/#" className="navbar-title navbar-logo" data-cursor="disable">
+        <a
+          href="/#"
+          className="navbar-title navbar-logo"
+          data-cursor="disable"
+          onClick={handleLogoClick}
+        >
           <Block />
         </a>
 
-
         <a
-          href="mailto:example@mail.com"
+          href="mailto:aftabdev108@gmail.com"
           className="navbar-connect"
           data-cursor="disable"
         >
           aftabdev108@gmail.com
         </a>
         <ul>
-          <li>
-            <a data-href="#experience" href="#experience">
-              <HoverLinks text="CAREER" />
-            </a>
-          </li>
-          <li>
-            <a data-href="#WhatIDO" href="#about">
-              <HoverLinks text="ABOUT" />
-            </a>
-          </li>
-          <li>
-            <a data-href="#projects" href="#work">
-              <HoverLinks text="WORK" />
-            </a>
-          </li>
-          <li>
-            <a data-href="#contact" href="#contact">
-              <HoverLinks text="CONTACT" />
-            </a>
-          </li>
+          {NAV_LINKS.map(({ label, href }) => (
+            <li key={href}>
+              <a data-href={href} href={href} onClick={handleNavClick}>
+                <HoverLinks text={label} />
+              </a>
+            </li>
+          ))}
         </ul>
       </div>
 

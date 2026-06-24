@@ -10,7 +10,15 @@
   left: 50%;
   transform: translateX(-50%);
   top: 0;
-  z-index: 9999;
+  z-index: 10000;
+  pointer-events: none;
+  isolation: isolate;
+}
+
+.header a,
+.header ul,
+.header ul li {
+  pointer-events: auto;
 }
 
 .header ul {
@@ -31,6 +39,13 @@
   color: #ccc;
   font-weight: 600;
   cursor: pointer;
+}
+
+.header ul a {
+  cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
 }
 
 .navbar-connect {
@@ -110,4 +125,10 @@
   margin: 0;
   width: 56px;
   height: 56px;
+}
+
+.main-body.is-loading .navbar-logo .wrapper,
+body.loading-active .navbar-logo .wrapper,
+body[data-keyboard-section]:not([data-keyboard-section="hero"]) .navbar-logo .wrapper {
+  display: none !important;
 }
