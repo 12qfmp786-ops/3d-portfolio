@@ -105,7 +105,7 @@ div.resume-button span {
 @media only screen and (max-width: 767px) {
     .resume-button {
         right: 6px;
-        bottom: 28px;
+        bottom: 112px;
         letter-spacing: 2px;
         font-size: 13px;
         line-height: 13px;

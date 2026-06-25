@@ -1,4 +1,32 @@
-export type Section = "hero" | "about" | "skills" | "experience" | "projects" | "contact";
+export type Section =
+  | "hero"
+  | "about"
+  | "techStack"
+  | "skills"
+  | "experience"
+  | "projects"
+  | "contact";
+
+const SKILLS_KEYBOARD_STATE = {
+  desktop: {
+    scale: { x: 0.25, y: 0.25, z: 0.25 },
+    position: { x: 400, y: -140, z: 0 },
+    rotation: {
+      x: 0,
+      y: Math.PI / 12,
+      z: 0,
+    },
+  },
+  mobile: {
+    scale: { x: 0.3, y: 0.3, z: 0.3 },
+    position: { x: 0, y: -40, z: 0 },
+    rotation: {
+      x: 0,
+      y: Math.PI / 6,
+      z: 0,
+    },
+  },
+} as const;
 
 export const STATES = {
   hero: {
@@ -53,26 +81,8 @@ export const STATES = {
       },
     },
   },
-  skills: {
-    desktop: {
-      scale: { x: 0.25, y: 0.25, z: 0.25 },
-      position: { x: 0, y: -40, z: 0 },
-      rotation: {
-        x: 0,
-        y: Math.PI / 12,
-        z: 0,
-      },
-    },
-    mobile: {
-      scale: { x: 0.3, y: 0.3, z: 0.3 },
-      position: { x: 0, y: -40, z: 0 },
-      rotation: {
-        x: 0,
-        y: Math.PI / 6,
-        z: 0,
-      },
-    },
-  },
+  techStack: SKILLS_KEYBOARD_STATE,
+  skills: SKILLS_KEYBOARD_STATE,
   projects: {
     desktop: {
       scale: { x: 0.25, y: 0.25, z: 0.25 },
@@ -115,6 +125,9 @@ export const STATES = {
   },
 };
 
+const MOBILE_REF_WIDTH = 390;
+const MOBILE_REF_HEIGHT = 844;
+
 export const getKeyboardState = ({
   section,
   isMobile,
@@ -126,23 +139,43 @@ export const getKeyboardState = ({
 
   const getScaleOffset = () => {
     const width = window.innerWidth;
-    // Reference widths for "ideal" size
-    // Using 1024 for desktop to maintain backward compatibility with previous look
-    const DESKTOP_REF_WIDTH = 1280;
-    const MOBILE_REF_WIDTH = 390;
 
-    const targetScale = isMobile
-      ? width / MOBILE_REF_WIDTH
-      : width / DESKTOP_REF_WIDTH;
+    if (!isMobile) {
+      const DESKTOP_REF_WIDTH = 1280;
+      const targetScale = width / DESKTOP_REF_WIDTH;
+      const minScale = 0.65;
+      const maxScale = 1.0;
+      return Math.min(Math.max(targetScale, minScale), maxScale);
+    }
 
-    // Clamp values to prevent extremes (tighter on 13" laptops)
-    const minScale = isMobile ? 0.5 : 0.65;
-    const maxScale = isMobile ? 0.65 : 1.0;
+    const height = window.innerHeight;
+    const widthScale = width / MOBILE_REF_WIDTH;
+    const baseTarget = Math.min(Math.max(widthScale, 0.5), 0.65);
 
-    return Math.min(Math.max(targetScale, minScale), maxScale);
+    // Shrink on viewports larger than the reference (e.g. iPhone 14 Pro Max) so
+    // the keyboard stays fully visible; smaller phones keep the existing scale.
+    const viewportFit = Math.min(
+      (MOBILE_REF_WIDTH / width) * (MOBILE_REF_HEIGHT / height),
+      1
+    );
+
+    return baseTarget * viewportFit;
+  };
+
+  const getMobilePositionAdjust = () => {
+    if (!isMobile) return { x: 0, y: 0, z: 0 };
+
+    const height = window.innerHeight;
+    const yOffset =
+      height > MOBILE_REF_HEIGHT
+        ? -(height - MOBILE_REF_HEIGHT) * 0.18
+        : 0;
+
+    return { x: 0, y: yOffset, z: 0 };
   };
 
   const scaleOffset = getScaleOffset();
+  const positionAdjust = getMobilePositionAdjust();
 
   return {
     ...baseTransform,
@@ -150,6 +183,11 @@ export const getKeyboardState = ({
       x: Math.abs(baseTransform.scale.x * scaleOffset),
       y: Math.abs(baseTransform.scale.y * scaleOffset),
       z: Math.abs(baseTransform.scale.z * scaleOffset),
+    },
+    position: {
+      x: baseTransform.position.x + positionAdjust.x,
+      y: baseTransform.position.y + positionAdjust.y,
+      z: baseTransform.position.z + positionAdjust.z,
     },
   };
 };

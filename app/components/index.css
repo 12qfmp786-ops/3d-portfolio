@@ -166,12 +166,13 @@ body:not([data-keyboard-section="hero"]) .keyboard-scene {
   z-index: 1;
 }
 
-/* Skills, career, projects, contact: content above keyboard */
+/* Skills, career, projects, contact, tech stack: content above keyboard */
 #smooth-content > section,
 #smooth-content > .whatIDO,
 #smooth-content > .career-section,
 #smooth-content > .contact-section,
-#smooth-content > .landing-section {
+#smooth-content > .landing-section,
+#smooth-content > section#tech-stack {
   position: relative;
   z-index: 2;
 }

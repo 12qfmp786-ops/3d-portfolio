@@ -160,7 +160,8 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     // Section transitions
     return [
       createSectionTimeline("#hero", "hero", "hero", "top top", "bottom 40%"),
-      createSectionTimeline("#skills", "skills", "hero"),
+      createSectionTimeline("#tech-stack", "techStack", "hero"),
+      createSectionTimeline("#skills", "skills", "techStack"),
       createSectionTimeline("#experience", "experience", "skills"),
       createSectionTimeline("#projects", "projects", "experience", "top 70%"),
       createSectionTimeline("#contact", "contact", "projects", "top 30%"),
@@ -317,6 +318,23 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
   }, [splineApp, isMobile]);
 
+  // Re-apply mobile keyboard layout on viewport resize (e.g. large phones, rotation)
+  useEffect(() => {
+    if (!splineApp || !isMobile) return;
+
+    const updateMobileKeyboardLayout = () => {
+      const kbd = splineApp.findObjectByName("keyboard");
+      if (!kbd) return;
+      const state = getKeyboardState({ section: activeSection, isMobile: true });
+      gsap.set(kbd.scale, state.scale);
+      gsap.set(kbd.position, state.position);
+      gsap.set(kbd.rotation, state.rotation);
+    };
+
+    window.addEventListener("resize", updateMobileKeyboardLayout, { passive: true });
+    return () => window.removeEventListener("resize", updateMobileKeyboardLayout);
+  }, [splineApp, isMobile, activeSection]);
+
   // Handle keyboard text visibility based on theme and section
   useEffect(() => {
     if (!splineApp) return;
@@ -339,7 +357,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
       textMobileLight.visible = mLight;
     };
 
-    if (activeSection !== "skills") {
+    if (activeSection !== "skills" && activeSection !== "techStack") {
       setVisibility(false, false, false, false);
     } else {
       isMobile
@@ -393,7 +411,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
     const manageAnimations = async () => {
       // Reset text if not in skills
-      if (activeSection !== "skills") {
+      if (activeSection !== "skills" && activeSection !== "techStack") {
         setSplineVariable(splineApp, "heading", "");
         setSplineVariable(splineApp, "desc", "");
       }
@@ -452,7 +470,12 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     // refresh (e.g. "/#skills#skills#skills") because the existing hash in the
     // address bar was never stripped first. replaceState also avoids polluting
     // browser history with an entry per scrolled-through section.
-    const hash = activeSection === "hero" ? "" : `#${activeSection}`;
+    const hash =
+      activeSection === "hero"
+        ? ""
+        : activeSection === "techStack"
+          ? "#tech-stack"
+          : `#${activeSection}`;
     const url = window.location.pathname + window.location.search + hash;
     window.history.replaceState(window.history.state, "", url);
 

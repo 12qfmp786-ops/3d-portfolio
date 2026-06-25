@@ -5,6 +5,7 @@ import { useScrollSmoother } from "@/app/components/hooks/useScrollSmoother";
 import Landing from "@/app/components/utils/Landing";
 import Navbar from "@/app/components/utils/navbar";
 import WhatIDo from "@/app/components/utils/WhatIDo";
+import TechStack from "@/app/components/utils/tech-Stack";
 import "@/app/components/index.css";
 import MainContainer from "@/app/components/utils/MainContainer";
 import Career from "@/app/components/utils/Career";
@@ -25,10 +26,12 @@ function HomeContent() {
           <Landing>
             <MainContainer />
           </Landing>
+          <TechStack />
           <WhatIDo />
           <Career />
           <Projects />
           <Contact />
+       
         </div>
       </div>
       <Navbar />
