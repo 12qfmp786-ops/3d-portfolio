@@ -6,7 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 const Spline = React.lazy(() => import("@splinetool/react-spline"));
 import { Skill, SkillNames, SKILLS } from "@/app/components/data/constants";
 import { sleep } from "@/app/components/lib/utils";
-import { useMediaQuery } from "@/app/components/hooks/use-media-query";
+import { getViewport, isCompactViewport, useViewport } from "@/app/components/hooks/use-viewport";
 import { useLoading } from "@/app/components/context/LoadingProvider";
 import { Section, getKeyboardState } from "@/app/components/animated-background-config";
 import { useSounds } from "@/app/components/hooks/use-sounds";
@@ -25,7 +25,8 @@ function setSplineVariable(app: Application, name: string, value: string) {
 
 const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   const { isLoading } = useLoading();
-  const isMobile = useMediaQuery("(max-width: 767px)");
+  const viewport = useViewport();
+  const isCompact = isCompactViewport(viewport);
   const splineContainer = useRef<HTMLDivElement>(null);
   const [splineApp, setSplineApp] = useState<Application>();
   const selectedSkillRef = useRef<Skill | null>(null);
@@ -123,21 +124,21 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
         invalidateOnRefresh: true,
         onEnter: () => {
           setActiveSection(targetSection);
-          const state = getKeyboardState({ section: targetSection, isMobile });
+          const state = getKeyboardState({ section: targetSection, viewport });
           gsap.to(kbd.scale, { ...state.scale, duration: 1 });
           gsap.to(kbd.position, { ...state.position, duration: 1 });
           gsap.to(kbd.rotation, { ...state.rotation, duration: 1 });
         },
         onEnterBack: () => {
           setActiveSection(targetSection);
-          const state = getKeyboardState({ section: targetSection, isMobile });
+          const state = getKeyboardState({ section: targetSection, viewport });
           gsap.to(kbd.scale, { ...state.scale, duration: 1 });
           gsap.to(kbd.position, { ...state.position, duration: 1 });
           gsap.to(kbd.rotation, { ...state.rotation, duration: 1 });
         },
         onLeaveBack: () => {
           setActiveSection(prevSection);
-          const state = getKeyboardState({ section: prevSection, isMobile });
+          const state = getKeyboardState({ section: prevSection, viewport });
           gsap.to(kbd.scale, { ...state.scale, duration: 1 });
           gsap.to(kbd.position, { ...state.position, duration: 1 });
           gsap.to(kbd.rotation, { ...state.rotation, duration: 1 });
@@ -152,7 +153,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     if (!kbd) return [];
 
     // Initial state
-    const heroState = getKeyboardState({ section: "hero", isMobile });
+    const heroState = getKeyboardState({ section: "hero", viewport });
     gsap.set(kbd.scale, heroState.scale);
     gsap.set(kbd.position, heroState.position);
     gsap.set(kbd.rotation, heroState.rotation);
@@ -256,7 +257,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     kbd.visible = true;
     setKeyboardRevealed(true);
 
-    const currentState = getKeyboardState({ section: activeSection, isMobile });
+    const currentState = getKeyboardState({ section: activeSection, viewport });
     gsap.fromTo(
       kbd.scale,
       { x: 0.01, y: 0.01, z: 0.01 },
@@ -272,7 +273,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
     await sleep(900);
 
-    if (isMobile) {
+    if (isCompact) {
       const mobileKeyCaps = allObjects.filter((obj) => obj.name === "keycap-mobile");
       mobileKeyCaps.forEach((keycap) => { keycap.visible = true; });
     } else {
@@ -316,24 +317,28 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
       });
     }
 
-  }, [splineApp, isMobile]);
+  }, [splineApp, viewport]);
 
-  // Re-apply mobile keyboard layout on viewport resize (e.g. large phones, rotation)
+  // Re-apply keyboard layout on viewport resize (mobile, tablet, desktop)
   useEffect(() => {
-    if (!splineApp || !isMobile) return;
+    if (!splineApp) return;
 
-    const updateMobileKeyboardLayout = () => {
+    const updateKeyboardLayout = () => {
       const kbd = splineApp.findObjectByName("keyboard");
       if (!kbd) return;
-      const state = getKeyboardState({ section: activeSection, isMobile: true });
+      const state = getKeyboardState({
+        section: activeSection,
+        viewport: getViewport(),
+      });
       gsap.set(kbd.scale, state.scale);
       gsap.set(kbd.position, state.position);
       gsap.set(kbd.rotation, state.rotation);
+      ScrollTrigger.refresh(true);
     };
 
-    window.addEventListener("resize", updateMobileKeyboardLayout, { passive: true });
-    return () => window.removeEventListener("resize", updateMobileKeyboardLayout);
-  }, [splineApp, isMobile, activeSection]);
+    window.addEventListener("resize", updateKeyboardLayout, { passive: true });
+    return () => window.removeEventListener("resize", updateKeyboardLayout);
+  }, [splineApp, viewport, activeSection]);
 
   // Handle keyboard text visibility based on theme and section
   useEffect(() => {
@@ -360,11 +365,11 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     if (activeSection !== "skills" && activeSection !== "techStack") {
       setVisibility(false, false, false, false);
     } else {
-      isMobile
+      isCompact
         ? setVisibility(false, false, true, false)
         : setVisibility(true, false, false, false);
     }
-  }, [splineApp, isMobile, activeSection]);
+  }, [splineApp, isCompact, activeSection]);
 
   useEffect(() => {
     if (!selectedSkill || !splineApp) return;
