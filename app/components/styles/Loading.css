@@ -15,7 +15,7 @@
     width: 100%;
     height: 100%;
     min-height: 100dvh;
-    background-color: #ffffff;
+    background-color: #000000;
     z-index: 1;
     display: flex;
     place-items: center;
@@ -269,7 +269,7 @@
     position: relative;
     width: 10px;
     height: 60px;
-    background-color: #000;
+    background-color: #a87cff;
     display: block;
   }
   .loaderGame-line:nth-child(2n) {
@@ -295,7 +295,7 @@
     left: 0;
     width: 100%;
     transform: translateY(-50%);
-    color: var(--backgroundColor);
+    color: #a87cff;
     font-size: 60px;
     font-weight: 600;
     text-transform: uppercase;

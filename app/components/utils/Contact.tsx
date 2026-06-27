@@ -5,12 +5,12 @@ const Contact = () => {
     return (
         <div className="contact-section section-container" id="contact">
             <div className="contact-container">
-         
+
 
                 <div className="contact-flex">
 
                     <div className="contact-box">
-                    <h3>CONTACT</h3>
+                        <h3>CONTACT</h3>
 
                         <h4>Email</h4>
                         <p>
@@ -60,8 +60,10 @@ const Contact = () => {
                             Instagram <MdArrowOutward />
                         </a>
                     </div>
-                    <div className="contact-box">
-                        <h2 >
+                  
+                    <div className="contact-box contact-footer">
+                       
+                        <h2>
                             Designed and Developed <br /> by <span>Aftab Shaikh</span>
                         </h2>
                         <h5 className="contact-copyright">
