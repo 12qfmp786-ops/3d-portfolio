@@ -11,6 +11,7 @@ import { useLoading } from "@/app/components/context/LoadingProvider";
 import { Section, getKeyboardState } from "@/app/components/animated-background-config";
 import { useSounds } from "@/app/components/hooks/use-sounds";
 import { usePerfProfile } from "@/app/components/hooks/use-perf-profile";
+import { LAYOUT_READY_EVENT } from "@/app/components/util/initialFX";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -28,6 +29,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   const viewport = useViewport();
   const isCompact = isCompactViewport(viewport);
   const splineContainer = useRef<HTMLDivElement>(null);
+  const keyboardSceneRef = useRef<HTMLDivElement>(null);
   const [splineApp, setSplineApp] = useState<Application>();
   const selectedSkillRef = useRef<Skill | null>(null);
 
@@ -101,7 +103,21 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     splineApp.addEventListener("mouseHover", handleMouseHover);
   };
 
-  // --- Animation Setup Helpers ---
+  const applyKeyboardLayout = (section: Section = activeSection) => {
+    if (!splineApp) return;
+    syncSplineCanvasSize(splineApp, splineContainer.current);
+    const kbd = splineApp.findObjectByName("keyboard");
+    if (!kbd) return;
+    const state = getKeyboardState({ section, viewport: getViewport() });
+    gsap.set(kbd.scale, state.scale);
+    gsap.set(kbd.position, state.position);
+    gsap.set(kbd.rotation, state.rotation);
+  };
+
+  const refreshKeyboardLayout = () => {
+    applyKeyboardLayout();
+    ScrollTrigger.refresh(true);
+  };
 
   const createSectionTimeline = (
     triggerId: string,
@@ -147,14 +163,8 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
   const setupScrollAnimations = (): gsap.core.Timeline[] => {
     if (!splineApp || !splineContainer.current) return [];
-    const kbd = splineApp.findObjectByName("keyboard");
-    if (!kbd) return [];
 
-    // Initial state
-    const heroState = getKeyboardState({ section: "hero", viewport });
-    gsap.set(kbd.scale, heroState.scale);
-    gsap.set(kbd.position, heroState.position);
-    gsap.set(kbd.rotation, heroState.rotation);
+    applyKeyboardLayout("hero");
 
     // Section transitions
     return [
@@ -250,11 +260,14 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     const kbd = splineApp.findObjectByName("keyboard");
     if (!kbd) return;
 
+    refreshKeyboardLayout();
+
     kbd.visible = false;
     await sleep(400);
     kbd.visible = true;
     setKeyboardRevealed(true);
 
+    refreshKeyboardLayout();
     const currentState = getKeyboardState({ section: activeSection, viewport });
     gsap.fromTo(
       kbd.scale,
@@ -292,6 +305,9 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
         { y: 50, duration: 0.5, delay: 0.1, ease: "bounce.out" }
       );
     });
+
+    await sleep(800);
+    refreshKeyboardLayout();
   };
 
   // --- Effects ---
@@ -325,20 +341,10 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
     const updateKeyboardLayout = () => {
       cancelAnimationFrame(frameId);
-      frameId = requestAnimationFrame(() => {
-        syncSplineCanvasSize(splineApp, splineContainer.current);
-        const kbd = splineApp.findObjectByName("keyboard");
-        if (!kbd) return;
-        const state = getKeyboardState({
-          section: activeSection,
-          viewport: getViewport(),
-        });
-        gsap.set(kbd.scale, state.scale);
-        gsap.set(kbd.position, state.position);
-        gsap.set(kbd.rotation, state.rotation);
-        ScrollTrigger.refresh(true);
-      });
+      frameId = requestAnimationFrame(() => refreshKeyboardLayout());
     };
+
+    updateKeyboardLayout();
 
     window.addEventListener("resize", updateKeyboardLayout, { passive: true });
     window.addEventListener("orientationchange", updateKeyboardLayout, {
@@ -347,12 +353,22 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     window.visualViewport?.addEventListener("resize", updateKeyboardLayout, {
       passive: true,
     });
+    window.addEventListener(LAYOUT_READY_EVENT, updateKeyboardLayout);
+
+    const scene = keyboardSceneRef.current;
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined" && scene) {
+      resizeObserver = new ResizeObserver(updateKeyboardLayout);
+      resizeObserver.observe(scene);
+    }
 
     return () => {
       cancelAnimationFrame(frameId);
       window.removeEventListener("resize", updateKeyboardLayout);
       window.removeEventListener("orientationchange", updateKeyboardLayout);
       window.visualViewport?.removeEventListener("resize", updateKeyboardLayout);
+      window.removeEventListener(LAYOUT_READY_EVENT, updateKeyboardLayout);
+      resizeObserver?.disconnect();
     };
   }, [splineApp, viewport, activeSection]);
 
@@ -509,7 +525,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   // never removed).
   useEffect(() => {
     if (!splineApp) return;
-    return capSplinePixelRatio(splineApp, maxDpr);
+    return capSplinePixelRatio(splineApp, maxDpr, splineContainer.current);
   }, [splineApp, maxDpr]);
 
   // Pause WebGL while the tab is hidden (reference behaviour)
@@ -524,7 +540,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   }, [splineApp]);
 
   return (
-    <div className="keyboard-scene">
+    <div className="keyboard-scene" ref={keyboardSceneRef}>
       <Suspense fallback={null}>
         <Spline
           className="pointer-events-auto h-full w-full"
@@ -534,7 +550,10 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
             setSplineApp(app);
             requestAnimationFrame(() => {
               syncSplineCanvasSize(app, splineContainer.current);
-              ScrollTrigger.refresh(true);
+              requestAnimationFrame(() => {
+                syncSplineCanvasSize(app, splineContainer.current);
+                ScrollTrigger.refresh(true);
+              });
             });
           }}
           scene="/assets/skills-keyboard.splinecode"
@@ -574,11 +593,21 @@ function syncSplineCanvasSize(
   app: Application,
   container: HTMLDivElement | null
 ) {
-  if (!container) return;
   const w = window.innerWidth;
   const h = window.innerHeight;
-  if (w > 0 && h > 0) {
-    app.setSize(w, h);
+  if (w <= 0 || h <= 0) return;
+
+  app.setSize(w, h);
+
+  // Percent-based canvas CSS can lag one frame behind layout on first paint.
+  const canvas = container?.querySelector("canvas");
+  if (canvas) {
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
+  }
+  if (container) {
+    container.style.width = `${w}px`;
+    container.style.height = `${h}px`;
   }
 }
 
@@ -589,7 +618,11 @@ function syncSplineCanvasSize(
  * re-reads devicePixelRatio when the canvas resizes. Returns a disposer that
  * removes the resize listener (so it isn't leaked across reloads/unmounts).
  */
-function capSplinePixelRatio(app: Application, maxDpr: number) {
+function capSplinePixelRatio(
+  app: Application,
+  maxDpr: number,
+  container: HTMLDivElement | null
+) {
   const apply = () => {
     try {
       const renderer = (app as unknown as { _renderer?: { setPixelRatio?: (n: number) => void } })
@@ -600,6 +633,7 @@ function capSplinePixelRatio(app: Application, maxDpr: number) {
     } catch {
       /* internal API moved — fail silent, scene still renders */
     }
+    syncSplineCanvasSize(app, container);
   };
   apply();
   window.addEventListener("resize", apply, { passive: true });

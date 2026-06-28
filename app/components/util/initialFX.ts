@@ -1,12 +1,16 @@
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
-import { unpauseScrollSmoother } from "@/app/components/util/navScroll";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { refreshScrollSmoother, unpauseScrollSmoother } from "@/app/components/util/navScroll";
 
-gsap.registerPlugin(SplitText);
+gsap.registerPlugin(SplitText, ScrollTrigger);
+
+export const LAYOUT_READY_EVENT = "portfolio:layout-ready";
 
 export function initialFX() {
   document.body.style.overflowY = "auto";
   unpauseScrollSmoother();
+  refreshScrollSmoother();
   gsap.set("body", { backgroundColor: "#0b080c" });
 
   var landingText = new SplitText(
@@ -75,6 +79,11 @@ export function initialFX() {
 
   LoopText(landingText2, landingText3);
   LoopText(landingText4, landingText5);
+
+  requestAnimationFrame(() => {
+    ScrollTrigger.refresh(true);
+    window.dispatchEvent(new Event(LAYOUT_READY_EVENT));
+  });
 }
 
 function LoopText(Text1: SplitText, Text2: SplitText) {
