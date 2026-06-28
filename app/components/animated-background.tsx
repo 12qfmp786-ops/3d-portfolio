@@ -114,6 +114,13 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     const kbd = splineApp.findObjectByName("keyboard");
     if (!kbd) return;
 
+    const applyState = (section: Section) => {
+      const state = getKeyboardState({ section, viewport: getViewport() });
+      gsap.to(kbd.scale, { ...state.scale, duration: 1 });
+      gsap.to(kbd.position, { ...state.position, duration: 1 });
+      gsap.to(kbd.rotation, { ...state.rotation, duration: 1 });
+    };
+
     return gsap.timeline({
       scrollTrigger: {
         trigger: triggerId,
@@ -124,24 +131,15 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
         invalidateOnRefresh: true,
         onEnter: () => {
           setActiveSection(targetSection);
-          const state = getKeyboardState({ section: targetSection, viewport });
-          gsap.to(kbd.scale, { ...state.scale, duration: 1 });
-          gsap.to(kbd.position, { ...state.position, duration: 1 });
-          gsap.to(kbd.rotation, { ...state.rotation, duration: 1 });
+          applyState(targetSection);
         },
         onEnterBack: () => {
           setActiveSection(targetSection);
-          const state = getKeyboardState({ section: targetSection, viewport });
-          gsap.to(kbd.scale, { ...state.scale, duration: 1 });
-          gsap.to(kbd.position, { ...state.position, duration: 1 });
-          gsap.to(kbd.rotation, { ...state.rotation, duration: 1 });
+          applyState(targetSection);
         },
         onLeaveBack: () => {
           setActiveSection(prevSection);
-          const state = getKeyboardState({ section: prevSection, viewport });
-          gsap.to(kbd.scale, { ...state.scale, duration: 1 });
-          gsap.to(kbd.position, { ...state.position, duration: 1 });
-          gsap.to(kbd.rotation, { ...state.rotation, duration: 1 });
+          applyState(prevSection);
         },
       },
     });
@@ -323,21 +321,38 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   useEffect(() => {
     if (!splineApp) return;
 
+    let frameId = 0;
+
     const updateKeyboardLayout = () => {
-      const kbd = splineApp.findObjectByName("keyboard");
-      if (!kbd) return;
-      const state = getKeyboardState({
-        section: activeSection,
-        viewport: getViewport(),
+      cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(() => {
+        const kbd = splineApp.findObjectByName("keyboard");
+        if (!kbd) return;
+        const state = getKeyboardState({
+          section: activeSection,
+          viewport: getViewport(),
+        });
+        gsap.set(kbd.scale, state.scale);
+        gsap.set(kbd.position, state.position);
+        gsap.set(kbd.rotation, state.rotation);
+        ScrollTrigger.refresh(true);
       });
-      gsap.set(kbd.scale, state.scale);
-      gsap.set(kbd.position, state.position);
-      gsap.set(kbd.rotation, state.rotation);
-      ScrollTrigger.refresh(true);
     };
 
     window.addEventListener("resize", updateKeyboardLayout, { passive: true });
-    return () => window.removeEventListener("resize", updateKeyboardLayout);
+    window.addEventListener("orientationchange", updateKeyboardLayout, {
+      passive: true,
+    });
+    window.visualViewport?.addEventListener("resize", updateKeyboardLayout, {
+      passive: true,
+    });
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener("resize", updateKeyboardLayout);
+      window.removeEventListener("orientationchange", updateKeyboardLayout);
+      window.visualViewport?.removeEventListener("resize", updateKeyboardLayout);
+    };
   }, [splineApp, viewport, activeSection]);
 
   // Handle keyboard text visibility based on theme and section

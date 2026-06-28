@@ -17,7 +17,13 @@ export function useViewport(): Viewport {
     const update = () => setViewport(getViewport());
     update();
     window.addEventListener("resize", update, { passive: true });
-    return () => window.removeEventListener("resize", update);
+    window.addEventListener("orientationchange", update, { passive: true });
+    window.visualViewport?.addEventListener("resize", update, { passive: true });
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
+      window.visualViewport?.removeEventListener("resize", update);
+    };
   }, []);
 
   return viewport;

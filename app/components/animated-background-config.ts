@@ -196,65 +196,48 @@ const TABLET_REF_HEIGHT = 1180;
 const DESKTOP_REF_WIDTH = 1280;
 const DESKTOP_REF_HEIGHT = 900;
 
+const REF_BY_VIEWPORT: Record<
+  Viewport,
+  { width: number; height: number; minScale: number; maxScale: number }
+> = {
+  mobile: { width: MOBILE_REF_WIDTH, height: MOBILE_REF_HEIGHT, minScale: 0.52, maxScale: 0.82 },
+  tablet: { width: TABLET_REF_WIDTH, height: TABLET_REF_HEIGHT, minScale: 0.58, maxScale: 0.98 },
+  desktop: { width: DESKTOP_REF_WIDTH, height: DESKTOP_REF_HEIGHT, minScale: 0.68, maxScale: 1.1 },
+};
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
+
 const getScaleOffset = (viewport: Viewport) => {
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-
-  if (viewport === "desktop") {
-    const widthFactor = width / DESKTOP_REF_WIDTH;
-    const heightFactor = height / DESKTOP_REF_HEIGHT;
-    const targetScale = Math.min(widthFactor, heightFactor);
-    return Math.min(Math.max(targetScale, 0.65), 1.0);
-  }
-
-  if (viewport === "tablet") {
-    const widthFactor = width / TABLET_REF_WIDTH;
-    const heightFactor = height / TABLET_REF_HEIGHT;
-    const baseTarget = Math.min(Math.max(Math.min(widthFactor, heightFactor), 0.55), 0.85);
-    const viewportFit = Math.min(
-      (TABLET_REF_WIDTH / width) * (TABLET_REF_HEIGHT / height),
-      1
-    );
-    return baseTarget * viewportFit;
-  }
-
-  const widthScale = width / MOBILE_REF_WIDTH;
-  const baseTarget = Math.min(Math.max(widthScale, 0.5), 0.65);
-  const viewportFit = Math.min(
-    (MOBILE_REF_WIDTH / width) * (MOBILE_REF_HEIGHT / height),
-    1
-  );
-  return baseTarget * viewportFit;
+  const { width, height, minScale, maxScale } = REF_BY_VIEWPORT[viewport];
+  const wRatio = window.innerWidth / width;
+  const hRatio = window.innerHeight / height;
+  return clamp(Math.min(wRatio, hRatio), minScale, maxScale);
 };
 
 const getResponsivePosition = (
   base: TransformProfile["position"],
   viewport: Viewport
 ) => {
+  const { width: refWidth, height: refHeight } = REF_BY_VIEWPORT[viewport];
   const width = window.innerWidth;
   const height = window.innerHeight;
 
-  let x = base.x;
+  const wRatio = clamp(width / refWidth, 0.75, 1.15);
+  const x = base.x * wRatio;
+
+  const heightDelta = height - refHeight;
   let y = base.y;
 
-  if (viewport === "desktop" && base.x !== 0) {
-    x = base.x * Math.min(width / DESKTOP_REF_WIDTH, 1);
-  }
-
   if (viewport === "mobile") {
-    if (height > MOBILE_REF_HEIGHT) {
-      y -= (height - MOBILE_REF_HEIGHT) * 0.18;
-    } else if (height < MOBILE_REF_HEIGHT) {
-      y += (MOBILE_REF_HEIGHT - height) * 0.06;
+    y -= heightDelta * 0.16;
+    if (width > MOBILE_REF_WIDTH && base.x === 0) {
+      return { x: (width - refWidth) * 0.06, y, z: base.z };
     }
   } else if (viewport === "tablet") {
-    if (height > TABLET_REF_HEIGHT) {
-      y -= (height - TABLET_REF_HEIGHT) * 0.12;
-    } else if (height < TABLET_REF_HEIGHT) {
-      y += (TABLET_REF_HEIGHT - height) * 0.08;
-    }
-  } else if (height < DESKTOP_REF_HEIGHT) {
-    y += (DESKTOP_REF_HEIGHT - height) * 0.05;
+    y -= heightDelta * 0.11;
+  } else {
+    y += heightDelta * 0.04;
   }
 
   return { x, y, z: base.z };
