@@ -326,6 +326,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     const updateKeyboardLayout = () => {
       cancelAnimationFrame(frameId);
       frameId = requestAnimationFrame(() => {
+        syncSplineCanvasSize(splineApp, splineContainer.current);
         const kbd = splineApp.findObjectByName("keyboard");
         if (!kbd) return;
         const state = getKeyboardState({
@@ -531,7 +532,10 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
           renderOnDemand
           onLoad={(app: Application) => {
             setSplineApp(app);
-            requestAnimationFrame(() => ScrollTrigger.refresh(true));
+            requestAnimationFrame(() => {
+              syncSplineCanvasSize(app, splineContainer.current);
+              ScrollTrigger.refresh(true);
+            });
           }}
           scene="/assets/skills-keyboard.splinecode"
         />
@@ -560,6 +564,23 @@ const AnimatedBackground = () => {
   if (!ready || disable3D || isLoading) return null;
   return <KeyboardScene maxDpr={maxDpr} />;
 };
+
+/**
+ * Keep the WebGL canvas locked to the full layout viewport. On real mobile
+ * devices the Spline ResizeObserver can measure a narrowed parent (flex /
+ * scroll-wrapper timing) and render the scene into a small left-aligned canvas.
+ */
+function syncSplineCanvasSize(
+  app: Application,
+  container: HTMLDivElement | null
+) {
+  if (!container) return;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  if (w > 0 && h > 0) {
+    app.setSize(w, h);
+  }
+}
 
 /**
  * Cap the Spline/Three.js renderer's pixel ratio. The scene is published with

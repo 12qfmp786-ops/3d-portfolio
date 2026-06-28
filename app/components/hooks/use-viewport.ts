@@ -2,16 +2,16 @@ import * as React from "react";
 
 export type Viewport = "mobile" | "tablet" | "desktop";
 
-/** Layout width — prefers visualViewport on real mobile browsers (address bar, pinch-zoom). */
+/** Layout width — use innerWidth so scale matches DevTools / layout viewport on real devices. */
 export function getViewportWidth(): number {
   if (typeof window === "undefined") return 1280;
-  return window.visualViewport?.width ?? window.innerWidth;
+  return window.innerWidth;
 }
 
-/** Layout height — prefers visualViewport so keyboard scale tracks the visible area. */
+/** Layout height — innerHeight stays stable when the mobile browser chrome shows/hides. */
 export function getViewportHeight(): number {
   if (typeof window === "undefined") return 900;
-  return window.visualViewport?.height ?? window.innerHeight;
+  return window.innerHeight;
 }
 
 export function getViewport(width = getViewportWidth()): Viewport {

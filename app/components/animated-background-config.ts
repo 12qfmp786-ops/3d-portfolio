@@ -45,8 +45,8 @@ const SKILLS_KEYBOARD_STATE: SectionStates = {
     },
   },
   mobile: {
-    scale: { x: 0.18, y: 0.18, z: 0.18 },
-    position: { x: 0, y: -20, z: 0 },
+    scale: { x: 0.26, y: 0.26, z: 0.26 },
+    position: { x: 0, y: -30, z: 0 },
     rotation: {
       x: 0,
       y: Math.PI / 6,
@@ -68,8 +68,8 @@ export const STATES: Record<Section, SectionStates> = {
       rotation: { x: 0, y: 0, z: 0 },
     },
     mobile: {
-      scale: { x: 0.18, y: 0.18, z: 0.18 },
-      position: { x: 0, y: -40, z: 0 },
+      scale: { x: 0.26, y: 0.26, z: 0.26 },
+      position: { x: 0, y: -80, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
     },
   },
@@ -93,8 +93,8 @@ export const STATES: Record<Section, SectionStates> = {
       },
     },
     mobile: {
-      scale: { x: 0.2, y: 0.2, z: 0.2 },
-      position: { x: 0, y: -20, z: 0 },
+      scale: { x: 0.24, y: 0.24, z: 0.24 },
+      position: { x: 0, y: -30, z: 0 },
       rotation: {
         x: 0,
         y: Math.PI / 6,
@@ -122,8 +122,8 @@ export const STATES: Record<Section, SectionStates> = {
       },
     },
     mobile: {
-      scale: { x: 0.18, y: 0.18, z: 0.18 },
-      position: { x: 0, y: -20, z: 0 },
+      scale: { x: 0.24, y: 0.24, z: 0.24 },
+      position: { x: 0, y: -30, z: 0 },
       rotation: {
         x: Math.PI / 6,
         y: -Math.PI / 6,
@@ -153,8 +153,8 @@ export const STATES: Record<Section, SectionStates> = {
       },
     },
     mobile: {
-      scale: { x: 0.18, y: 0.18, z: 0.18 },
-      position: { x: 0, y: 60, z: 0 },
+      scale: { x: 0.24, y: 0.24, z: 0.24 },
+      position: { x: 0, y: 80, z: 0 },
       rotation: {
         x: Math.PI,
         y: Math.PI / 3,
@@ -182,8 +182,8 @@ export const STATES: Record<Section, SectionStates> = {
       },
     },
     mobile: {
-      scale: { x: 0.16, y: 0.16, z: 0.16 },
-      position: { x: 0, y: 60, z: 0 },
+      scale: { x: 0.22, y: 0.22, z: 0.22 },
+      position: { x: 0, y: 80, z: 0 },
       rotation: {
         x: Math.PI,
         y: Math.PI / 3,
@@ -204,7 +204,7 @@ const REF_BY_VIEWPORT: Record<
   Viewport,
   { width: number; height: number; minScale: number; maxScale: number }
 > = {
-  mobile: { width: MOBILE_REF_WIDTH, height: MOBILE_REF_HEIGHT, minScale: 0.38, maxScale: 0.72 },
+  mobile: { width: MOBILE_REF_WIDTH, height: MOBILE_REF_HEIGHT, minScale: 0.55, maxScale: 1.0 },
   tablet: { width: TABLET_REF_WIDTH, height: TABLET_REF_HEIGHT, minScale: 0.58, maxScale: 0.98 },
   desktop: { width: DESKTOP_REF_WIDTH, height: DESKTOP_REF_HEIGHT, minScale: 0.68, maxScale: 1.1 },
 };
@@ -215,6 +215,11 @@ const clamp = (value: number, min: number, max: number) =>
 const getScaleOffset = (viewport: Viewport) => {
   const { width, height, minScale, maxScale } = REF_BY_VIEWPORT[viewport];
   const wRatio = getViewportWidth() / width;
+  // On mobile, scale by width only — browser chrome changes height constantly
+  // and was shrinking the keyboard on real devices vs DevTools.
+  if (viewport === "mobile") {
+    return clamp(wRatio, minScale, maxScale);
+  }
   const hRatio = getViewportHeight() / height;
   return clamp(Math.min(wRatio, hRatio), minScale, maxScale);
 };
@@ -234,11 +239,7 @@ const getResponsivePosition = (
   let y = base.y;
 
   if (viewport === "mobile") {
-    y -= heightDelta * 0.12;
-    // Keep keyboard horizontally centered on narrow screens (fixed Spline camera).
-    if (base.x === 0) {
-      return { x: 0, y, z: base.z };
-    }
+    y -= heightDelta * 0.14;
   } else if (viewport === "tablet") {
     y -= heightDelta * 0.11;
   } else {

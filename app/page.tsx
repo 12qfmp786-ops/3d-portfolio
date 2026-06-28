@@ -21,8 +21,9 @@ function HomeContent() {
 
   return (
     <>
+      {/* Outside smooth-wrapper so position:fixed tracks the viewport, not a transformed scroll layer */}
+      <AnimatedBackground />
       <div id="smooth-wrapper">
-        <AnimatedBackground />
         <div id="smooth-content">
           <Landing>
             <MainContainer />
