@@ -143,21 +143,31 @@ body:not([data-keyboard-section="hero"]) #smooth-content {
   position: fixed;
   inset: 0;
   width: 100vw;
-  height: 100dvh;
   height: 100svh;
   pointer-events: none;
   z-index: 1;
+  opacity: 0;
+  transition: opacity 0.35s ease;
 }
 
-.keyboard-scene > div {
-  width: 100% !important;
-  height: 100% !important;
+.keyboard-scene--ready {
+  opacity: 1;
+}
+
+/* Spline ParentSize wrapper + canvas — viewport-fixed, never % of a narrow parent */
+.keyboard-scene .keyboard-spline-root,
+.keyboard-scene .keyboard-spline-root > canvas {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100svh !important;
+  max-width: none !important;
+  max-height: none !important;
+  overflow: hidden;
 }
 
 .keyboard-scene canvas {
   display: block;
-  width: 100% !important;
-  height: 100% !important;
   pointer-events: auto;
 }
 
