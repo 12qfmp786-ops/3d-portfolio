@@ -1,5 +1,6 @@
 "use client";
 import React, { Suspense, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Application, SPEObject, SplineEvent } from "@splinetool/runtime";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -43,6 +44,8 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   const keycapAnimationsRef = useRef<{ start: () => void; stop: () => void }>(null);
 
   const [keyboardRevealed, setKeyboardRevealed] = useState(false);
+  const [layoutReady, setLayoutReady] = useState(false);
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
   // --- Event Handlers ---
 
@@ -105,7 +108,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
   const applyKeyboardLayout = (section: Section = activeSection) => {
     if (!splineApp) return;
-    syncSplineCanvasSize(splineApp, splineContainer.current);
+    syncSplineCanvasSize(splineApp, keyboardSceneRef.current);
     const kbd = splineApp.findObjectByName("keyboard");
     if (!kbd) return;
     const state = getKeyboardState({ section, viewport: getViewport() });
@@ -116,8 +119,22 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
   const refreshKeyboardLayout = () => {
     applyKeyboardLayout();
+    const scene = keyboardSceneRef.current;
+    if (scene) {
+      const { width, height } = scene.getBoundingClientRect();
+      if (
+        width >= window.innerWidth * 0.9 &&
+        height >= window.innerHeight * 0.9
+      ) {
+        setLayoutReady(true);
+      }
+    }
     ScrollTrigger.refresh(true);
   };
+
+  useEffect(() => {
+    setPortalTarget(document.body);
+  }, []);
 
   const createSectionTimeline = (
     triggerId: string,
@@ -162,7 +179,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   };
 
   const setupScrollAnimations = (): gsap.core.Timeline[] => {
-    if (!splineApp || !splineContainer.current) return [];
+    if (!splineApp || !keyboardSceneRef.current) return [];
 
     applyKeyboardLayout("hero");
 
@@ -308,6 +325,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
     await sleep(800);
     refreshKeyboardLayout();
+    setLayoutReady(true);
   };
 
   // --- Effects ---
@@ -345,6 +363,8 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     };
 
     updateKeyboardLayout();
+
+    const layoutFallback = window.setTimeout(() => setLayoutReady(true), 800);
 
     window.addEventListener("resize", updateKeyboardLayout, { passive: true });
     window.addEventListener("orientationchange", updateKeyboardLayout, {
@@ -525,7 +545,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   // never removed).
   useEffect(() => {
     if (!splineApp) return;
-    return capSplinePixelRatio(splineApp, maxDpr, splineContainer.current);
+    return capSplinePixelRatio(splineApp, maxDpr, keyboardSceneRef.current);
   }, [splineApp, maxDpr]);
 
   // Pause WebGL while the tab is hidden (reference behaviour)
@@ -539,28 +559,34 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, [splineApp]);
 
-  return (
-    <div className="keyboard-scene" ref={keyboardSceneRef}>
-      <Suspense fallback={null}>
-        <Spline
-          className="pointer-events-auto h-full w-full"
-          ref={splineContainer}
-          renderOnDemand
-          onLoad={(app: Application) => {
-            setSplineApp(app);
-            requestAnimationFrame(() => {
-              syncSplineCanvasSize(app, splineContainer.current);
-              requestAnimationFrame(() => {
-                syncSplineCanvasSize(app, splineContainer.current);
-                ScrollTrigger.refresh(true);
-              });
-            });
-          }}
-          scene="/assets/skills-keyboard.splinecode"
-        />
-      </Suspense>
-    </div>
-  );
+  return portalTarget
+    ? createPortal(
+        <div
+          className={`keyboard-scene${layoutReady ? " keyboard-scene--ready" : ""}`}
+          ref={keyboardSceneRef}
+        >
+          <Suspense fallback={null}>
+            <Spline
+              className="keyboard-spline-root pointer-events-auto"
+              ref={splineContainer}
+              renderOnDemand
+              onLoad={(app: Application) => {
+                setSplineApp(app);
+                requestAnimationFrame(() => {
+                  syncSplineCanvasSize(app, keyboardSceneRef.current);
+                  requestAnimationFrame(() => {
+                    syncSplineCanvasSize(app, keyboardSceneRef.current);
+                    ScrollTrigger.refresh(true);
+                  });
+                });
+              }}
+              scene="/assets/skills-keyboard.splinecode"
+            />
+          </Suspense>
+        </div>,
+        portalTarget
+      )
+    : null;
 };
 
 /**
@@ -591,24 +617,16 @@ const AnimatedBackground = () => {
  */
 function syncSplineCanvasSize(
   app: Application,
-  container: HTMLDivElement | null
+  scene: HTMLDivElement | null
 ) {
-  const w = window.innerWidth;
-  const h = window.innerHeight;
+  if (!scene) return;
+
+  const rect = scene.getBoundingClientRect();
+  const w = Math.round(rect.width || window.innerWidth);
+  const h = Math.round(rect.height || window.innerHeight);
   if (w <= 0 || h <= 0) return;
 
   app.setSize(w, h);
-
-  // Percent-based canvas CSS can lag one frame behind layout on first paint.
-  const canvas = container?.querySelector("canvas");
-  if (canvas) {
-    canvas.style.width = `${w}px`;
-    canvas.style.height = `${h}px`;
-  }
-  if (container) {
-    container.style.width = `${w}px`;
-    container.style.height = `${h}px`;
-  }
 }
 
 /**
@@ -621,7 +639,7 @@ function syncSplineCanvasSize(
 function capSplinePixelRatio(
   app: Application,
   maxDpr: number,
-  container: HTMLDivElement | null
+  scene: HTMLDivElement | null
 ) {
   const apply = () => {
     try {
@@ -633,7 +651,7 @@ function capSplinePixelRatio(
     } catch {
       /* internal API moved — fail silent, scene still renders */
     }
-    syncSplineCanvasSize(app, container);
+    syncSplineCanvasSize(app, scene);
   };
   apply();
   window.addEventListener("resize", apply, { passive: true });
