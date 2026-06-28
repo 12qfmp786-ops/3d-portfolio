@@ -3,43 +3,51 @@ import {
   PropsWithChildren,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
-import Loading, { setProgress } from "../utils/loading";
+import Loading from "../utils/loading";
 import { skipLoadingInDev } from "../hooks/useDevInitialFX";
 
 interface LoadingType {
   isLoading: boolean;
   setIsLoading: (state: boolean) => void;
-  setLoading: (percent: number) => void;
 }
 
 export const LoadingContext = createContext<LoadingType | null>(null);
 
 export const LoadingProvider = ({ children }: PropsWithChildren) => {
   const [isLoading, setIsLoading] = useState(!skipLoadingInDev);
-  const [loading, setLoading] = useState(0);
+  const initialFxPlayed = useRef(false);
 
   const value = {
     isLoading,
     setIsLoading,
-    setLoading,
   };
-
-  useEffect(() => {
-    if (skipLoadingInDev) return;
-    const progress = setProgress(setLoading);
-    return () => progress.clear();
-  }, []);
 
   useEffect(() => {
     document.body.classList.toggle("loading-active", isLoading);
     return () => document.body.classList.remove("loading-active");
   }, [isLoading]);
 
+  useEffect(() => {
+    if (isLoading || skipLoadingInDev || initialFxPlayed.current) return;
+    initialFxPlayed.current = true;
+
+    const runInitialFx = () => {
+      import("@/app/components/util/initialFX").then((module) => {
+        module.initialFX?.();
+      });
+    };
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(runInitialFx);
+    });
+  }, [isLoading]);
+
   return (
     <LoadingContext.Provider value={value as LoadingType}>
-      {isLoading && <Loading percent={loading} />}
+      {isLoading && <Loading />}
       <main className={`main-body${isLoading ? " is-loading" : ""}`}>
         {children}
       </main>

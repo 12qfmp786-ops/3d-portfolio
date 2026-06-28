@@ -13,10 +13,9 @@
     min-height: 100px;
     display: flex;
     margin-top: -97px;
-
+    
 
 }
-
 .contact-title h3 {
     margin-bottom: 25px;
 }
@@ -55,7 +54,7 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-
+    
 }
 
 
@@ -66,54 +65,19 @@
 }
 
 a.contact-social {
-    display: flex;
-    /* 👈 KEY FIX */
-    justify-content: space-between;
-    /* text left, arrow right */
+    display: flex;                    /* 👈 KEY FIX */
+    justify-content: space-between;   /* text left, arrow right */
     align-items: center;
 
     font-size: 25px;
     padding-bottom: 8px;
     border-bottom: 1px solid #ccc;
-    width: 135px;
-    /* controls underline length */
-}
-
-.contact-box {
-    display: flex;
-    flex-direction: column;
-    max-height: 400px;
-    /* overflow: hidden; */
+    width: 135px;                     /* controls underline length */
 }
 
 .contact-box h2 {
     font-weight: 400;
     font-size: 23px;
-    margin: 0;
-    text-align: right;
-}
-
-.contact-footer {
-    flex-direction: row;
-    align-items: flex-end;
-    /* align both to the bottom baseline */
-    justify-content: space-between;
-    width: 100%;
-    max-height: none;
-    margin-top: auto;
-    gap: 16px;
-}
-
-.contact-footer .contact-copyright {
-    margin-top: 0;
-    flex-direction: row;
-    /* override column on h5 */
-    align-items: center;
-    white-space: nowrap;
-}
-
-.contact-footer h2 {
-    text-align: right;
     margin: 0;
 }
 
@@ -126,9 +90,7 @@ a.contact-social {
     font-weight: 500;
     line-height: 20px;
     display: flex;
-    flex-direction: column;
-    align-items: left;
-    gap: 5px;
+    gap: 10px;
     opacity: 0.5;
 }
 

@@ -5,9 +5,10 @@ import Block from "./Block";
 import { scrollToSection } from "@/app/components/util/navScroll";
 
 const NAV_LINKS = [
-  { label: "CAREER", href: "#experience" },
   { label: "ABOUT", href: "#skills" },
-  { label: "WORK", href: "#projects" },
+  { label: "CAREER", href: "#experience" },
+
+  { label: "PROJECTS", href: "#projects" },
   { label: "CONTACT", href: "#contact" },
 ] as const;
 
@@ -27,7 +28,7 @@ const Navbar = () => {
 
   return (
     <>
-      <div className="header flex justify-between items-start">
+      <div className="header">
         <a
           href="/#"
           className="navbar-title navbar-logo"
@@ -37,13 +38,13 @@ const Navbar = () => {
           <Block />
         </a>
 
-        <a
+        {/* <a
           href="mailto:aftabdev108@gmail.com"
           className="navbar-connect"
           data-cursor="disable"
         >
           aftabdev108@gmail.com
-        </a>
+        </a> */}
         <ul>
           {NAV_LINKS.map(({ label, href }) => (
             <li key={href}>

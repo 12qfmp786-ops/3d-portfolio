@@ -1,40 +1,40 @@
-import { useEffect, useState } from "react";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
 import "../styles/Loading.css";
 import { useLoading } from "@/app/components/context/LoadingProvider";
 
-import Marquee from "react-fast-marquee";
+const MARQUEE_ITEMS = [
+  "A Creative Developer",
+  "A Creative Designer",
+  "A Creative Developer",
+  "A Creative Designer",
+];
 
-const Loading = ({ percent }: { percent: number }) => {
+const Loading = () => {
   const { setIsLoading } = useLoading();
-  const [loaded, setLoaded] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [clicked, setClicked] = useState(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const percentRef = useRef<HTMLSpanElement>(null);
+  const [phase, setPhase] = useState<"loading" | "welcome" | "exit">("loading");
+  const timelineStarted = useRef(false);
 
   useEffect(() => {
-    if (percent < 100) return;
+    const wrap = wrapRef.current;
+    if (!wrap) return;
 
-    const loadedTimer = window.setTimeout(() => setLoaded(true), 600);
-    const welcomeTimer = window.setTimeout(() => setIsLoaded(true), 1600);
-
-    return () => {
-      window.clearTimeout(loadedTimer);
-      window.clearTimeout(welcomeTimer);
+    const setCenter = () => {
+      const rect = wrap.getBoundingClientRect();
+      wrap.style.setProperty("--mouse-x", `${rect.width * 0.15}px`);
+      wrap.style.setProperty("--mouse-y", `${rect.height * 0.35}px`);
     };
-  }, [percent]);
 
-  useEffect(() => {
-    import("@/app/components/util/initialFX").then((module) => {
-      if (isLoaded) {
-        setClicked(true);
-        setTimeout(() => {
-          if (module.initialFX) {
-            module.initialFX();
-          }
-          setIsLoading(false);
-        }, 900);
-      }
-    });
-  }, [isLoaded]);
+    setCenter();
+    requestAnimationFrame(setCenter);
+    window.addEventListener("resize", setCenter);
+    return () => window.removeEventListener("resize", setCenter);
+  }, []);
 
   function handleMouseMove(e: React.MouseEvent<HTMLElement>) {
     const { currentTarget: target } = e;
@@ -45,43 +45,113 @@ const Loading = ({ percent }: { percent: number }) => {
     target.style.setProperty("--mouse-y", `${y}px`);
   }
 
+  useEffect(() => {
+    if (timelineStarted.current) return;
+    timelineStarted.current = true;
+
+    const progress = { value: 0 };
+    const wrap = wrapRef.current;
+    const overlay = overlayRef.current;
+
+    const updatePercent = () => {
+      if (percentRef.current) {
+        percentRef.current.textContent = `${Math.round(progress.value)}%`;
+      }
+    };
+
+    const master = gsap.timeline({
+      defaults: { ease: "power2.inOut" },
+    });
+
+    master.to(progress, {
+      value: 92,
+      duration: 7.2,
+      ease: "power1.out",
+      onUpdate: updatePercent,
+    });
+
+    master.to(progress, {
+      value: 100,
+      duration: 0.7,
+      ease: "power2.inOut",
+      onUpdate: updatePercent,
+    });
+
+    master.to({}, { duration: 0.6, onComplete: () => setPhase("welcome") });
+
+    master.to({}, { duration: 1.05 });
+
+    master.call(() => setPhase("exit"));
+
+    if (wrap) {
+      master.to(wrap, {
+        scale: 55,
+        duration: 0.85,
+        ease: "power3.inOut",
+        force3D: true,
+      });
+    }
+
+    if (overlay) {
+      master.to(
+        overlay,
+        {
+          opacity: 0,
+          duration: 0.35,
+          ease: "power1.out",
+        },
+        "-=0.2"
+      );
+    }
+
+    master.call(() => {
+      setIsLoading(false);
+    });
+
+    return () => {
+      master.kill();
+    };
+  }, [setIsLoading]);
+
   return (
-    <>
-      <div className="loading-header">
-        <a href="/#" className="loader-title" data-cursor="disable">
-          {/* Logo */}
-        </a>
-        <div className={`loaderGame ${clicked && "loader-out"}`}>
+    <div className="loading-overlay" ref={overlayRef}>
+      <div className="loading-header" aria-hidden="true">
+        <a href="/#" className="loader-title" data-cursor="disable" />
+        <div className={`loaderGame ${phase === "exit" ? "loader-out" : ""}`}>
           <div className="loaderGame-container">
             <div className="loaderGame-in">
-              {[...Array(27)].map((_, index) => (
-                <div className="loaderGame-line" key={index}></div>
+              {[...Array(8)].map((_, index) => (
+                <div className="loaderGame-line" key={index} />
               ))}
             </div>
-            <div className="loaderGame-ball"></div>
+            <div className="loaderGame-ball" />
           </div>
         </div>
       </div>
+
       <div className="loading-screen">
-        <div className="loading-marquee">
-          <Marquee>
-            <span> A Creative Developer</span> <span>A Creative Designer</span>
-            <span> A Creative Developer</span> <span>A Creative Designer</span>
-          </Marquee>
+        <div className="loading-marquee" aria-hidden="true">
+          <div className="loading-marquee-track">
+            {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((text, index) => (
+              <span key={`${text}-${index}`}>{text}</span>
+            ))}
+          </div>
         </div>
+
         <div
-          className={`loading-wrap ${clicked && "loading-clicked"}`}
-          onMouseMove={(e) => handleMouseMove(e)}
+          ref={wrapRef}
+          className={`loading-wrap ${phase === "exit" ? "loading-clicked" : ""}`}
+          onMouseMove={handleMouseMove}
         >
           <div className="loading-hover"></div>
-          <div className={`loading-button ${loaded && "loading-complete"}`}>
+          <div className={`loading-button ${phase !== "loading" ? "loading-complete" : ""}`}>
             <div className="loading-container">
               <div className="loading-content">
                 <div className="loading-content-in">
-                  Loading <span>{percent}%</span>
+                  Loading <span ref={percentRef}>0%</span>
                 </div>
               </div>
-              <div className="loading-box"></div>
+              <div className="loading-box" />
             </div>
             <div className="loading-content2">
               <span>Welcome</span>
@@ -89,71 +159,8 @@ const Loading = ({ percent }: { percent: number }) => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
 export default Loading;
-
-export const setProgress = (setLoading: (value: number) => void) => {
-  let percent = 0;
-  let interval: ReturnType<typeof setInterval> | null = null;
-  let finishInterval: ReturnType<typeof setInterval> | null = null;
-
-  function finishTo100() {
-    finishInterval = setInterval(() => {
-      if (percent < 100) {
-        percent += 1;
-        setLoading(percent);
-      } else if (finishInterval) {
-        clearInterval(finishInterval);
-        finishInterval = null;
-      }
-    }, 400);
-  }
-
-  interval = setInterval(() => {
-    if (percent < 50) {
-      percent += Math.round(Math.random() * 4) + 2;
-    } else if (percent < 85) {
-      percent += Math.round(Math.random() * 2) + 1;
-    } else if (percent < 92) {
-      percent += 1;
-    } else {
-      if (interval) {
-        clearInterval(interval);
-        interval = null;
-      }
-      finishTo100();
-      return;
-    }
-
-    setLoading(Math.min(percent, 92));
-  }, 120);
-
-  function clear() {
-    if (interval) clearInterval(interval);
-    if (finishInterval) clearInterval(finishInterval);
-    setLoading(100);
-  }
-
-  function loaded() {
-    return new Promise<number>((resolve) => {
-      if (interval) clearInterval(interval);
-      if (finishInterval) clearInterval(finishInterval);
-      interval = null;
-      finishInterval = setInterval(() => {
-        if (percent < 100) {
-          percent += 1;
-          setLoading(percent);
-        } else {
-          resolve(percent);
-          if (finishInterval) clearInterval(finishInterval);
-          finishInterval = null;
-        }
-      }, 40);
-    });
-  }
-
-  return { loaded, percent, clear };
-};

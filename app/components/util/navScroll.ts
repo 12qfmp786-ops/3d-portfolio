@@ -7,7 +7,10 @@ export function getSmoother() {
 }
 
 export function refreshScrollSmoother() {
-  requestAnimationFrame(() => ScrollTrigger.refresh(true));
+  requestAnimationFrame(() => {
+    ScrollTrigger.refresh(true);
+    getSmoother()?.refresh(true);
+  });
 }
 
 export function scrollToSection(target: string) {

@@ -541,7 +541,8 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
  */
 const AnimatedBackground = () => {
   const { disable3D, maxDpr, ready } = usePerfProfile();
-  if (!ready || disable3D) return null;
+  const { isLoading } = useLoading();
+  if (!ready || disable3D || isLoading) return null;
   return <KeyboardScene maxDpr={maxDpr} />;
 };
 

@@ -16,17 +16,16 @@ export function useScrollSmoother() {
   const { isLoading } = useLoading();
 
   useEffect(() => {
-    initScrollSmoother();
-  }, []);
-
-  useEffect(() => {
     if (isLoading) return;
-    refreshScrollSmoother();
-  }, [isLoading]);
 
-  useEffect(() => {
+    initScrollSmoother();
+    refreshScrollSmoother();
+
     const handleResize = () => ScrollSmoother.refresh(true);
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [isLoading]);
 }

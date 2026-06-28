@@ -31,6 +31,21 @@ const Career = () => {
           <div className="career-info-box">
             <div className="career-info-in">
               <div className="career-role">
+                <h4>Software Engineer</h4>
+                <h5>Mavonic Technology Pvt. Ltd.</h5>
+              </div>
+              <h3>Now</h3>
+            </div>
+       
+            <p>
+              Built and optimized responsive web interfaces for a design agency project, ensuring cross-device
+              compatibility and improved performance. Contributed to the NK Construction App, enabling employee onboarding,
+              employee record management, and automated salary calculation.
+            </p>
+          </div>
+          <div className="career-info-box">
+            <div className="career-info-in">
+              <div className="career-role">
                 <h4>Junior Technical Consultant</h4>
                 <h5>Squad Logic.</h5>
               </div>
@@ -40,20 +55,7 @@ const Career = () => {
               Played a key role in testing and troubleshooting APIs to ensure optimal functionality and
               reliability, using advanced tools like Postman and SQL for querying and debugging.
             </p>
-          </div>
-          <div className="career-info-box">
-            <div className="career-info-in">
-              <div className="career-role">
-                <h4>Software Engineer</h4>
-                <h5>Mavonic Technology Pvt. Ltd.</h5>
-              </div>
-              <h3>Now</h3>
-            </div>
-            <p>
-              Built and optimized responsive web interfaces for a design agency project, ensuring cross-device
-              compatibility and improved performance. Contributed to the NK Construction App, enabling employee onboarding,
-              employee record management, and automated salary calculation.
-            </p>
+        
           </div>
 
         </div>

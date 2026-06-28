@@ -13,6 +13,7 @@ import SocialIcons from "@/app/components/utils/SocialIcons";
 import Contact from "@/app/components/utils/Contact";
 import Projects from "@/app/components/utils/projects";
 import AnimatedBackground from "@/app/components/animated-background";
+import Footer from "@/app/components/footer/footer";
 
 function HomeContent() {
   useDevInitialFX();
@@ -31,7 +32,7 @@ function HomeContent() {
           <Career />
           <Projects />
           <Contact />
-       
+          <Footer />
         </div>
       </div>
       <Navbar />

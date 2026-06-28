@@ -4,12 +4,12 @@ import "@/app/components/styles/Landing.css";
 const Landing = ({ children }: PropsWithChildren) => {
   return (
     <>
-    <div className="landing-section" id="hero">
+      <div className="landing-section" id="hero">
         <div className="landing-container">
           <div className="landing-intro">
             <h2>Hello! I'm</h2>
             <h1>
-          Aftab 
+              Aftab
               <br />
               <span>Shaikh</span>
             </h1>

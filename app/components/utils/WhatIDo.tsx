@@ -99,7 +99,7 @@ const WhatIDo = () => {
 
             <div className="what-content-in">
               <h3>DEVELOPMENT</h3>
-              <h4>Description</h4>
+              {/* <h4>Description</h4> */}
               <p>
                 I'm a skilled software developer with experience in TypeScript
                 and JavaScript, and expertise in frameworks like React, Node.js,
@@ -146,7 +146,7 @@ const WhatIDo = () => {
 
             <div className="what-content-in">
               <h3>CREATE</h3>
-              <h4>Description</h4>
+              {/* <h4>Description</h4> */}
               <p>
                 I create responsive, user-friendly, and visually appealing
                 digital experiences.

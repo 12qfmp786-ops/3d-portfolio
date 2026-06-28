@@ -39,8 +39,8 @@ const SocialIcons = () => {
         currentX += (mouseX - currentX) * 0.1;
         currentY += (mouseY - currentY) * 0.1;
 
-        link.style.setProperty("--siLeft", `${currentX}px`);
-        link.style.setProperty("--siTop", `${currentY}px`);
+        const bounds = elem.getBoundingClientRect();
+        link.style.transform = `translate(${currentX - bounds.width / 2}px, ${currentY - bounds.height / 2}px)`;
 
         frameId = requestAnimationFrame(updatePosition);
       };
