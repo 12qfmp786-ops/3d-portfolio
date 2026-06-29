@@ -23,6 +23,16 @@
   --vh: 100vh;
   --vh: 100svh;
 }
+
+input,
+textarea,
+select,
+[contenteditable="true"] {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+}
+
 h1,
 h2,
 h3,
@@ -89,16 +99,13 @@ body {
   height: 100%;
   overflow: hidden;
   position: relative;
+  z-index: 2;
+  isolation: isolate;
 }
 
 #smooth-content {
   width: 100%;
   position: relative;
-}
-
-/* Non-landing sections: entire scroll layer above the fixed keyboard */
-body:not([data-keyboard-section="hero"]) #smooth-content {
-  z-index: 2;
 }
 
 .section-container {
@@ -171,6 +178,12 @@ body:not([data-keyboard-section="hero"]) #smooth-content {
   pointer-events: auto;
 }
 
+/* Non-hero: keyboard stays decorative — never steal clicks from content */
+body:not([data-keyboard-section="hero"]) .keyboard-scene canvas,
+body:not([data-keyboard-section="hero"]) .keyboard-spline-root {
+  pointer-events: none;
+}
+
 /* Hero: keyboard in front of landing text, but below the fixed navbar */
 body[data-keyboard-section="hero"] .keyboard-scene {
   z-index: 4;
@@ -179,11 +192,6 @@ body[data-keyboard-section="hero"] .keyboard-scene {
 body[data-keyboard-section="hero"] .landing-intro,
 body[data-keyboard-section="hero"] .landing-info {
   z-index: 2;
-}
-
-/* All other sections: keyboard behind content */
-body:not([data-keyboard-section="hero"]) .keyboard-scene {
-  z-index: 1;
 }
 
 /* Skills, career, projects, contact, tech stack: content above keyboard */
@@ -198,7 +206,9 @@ body:not([data-keyboard-section="hero"]) .keyboard-scene {
 }
 
 #smooth-content > .whatIDO .what-box,
+#smooth-content > .career-section,
 #smooth-content > .career-section .career-container,
+#smooth-content > .career-section .career-info,
 #smooth-content > .contact-section .contact-container,
 #smooth-content > section#projects {
   position: relative;

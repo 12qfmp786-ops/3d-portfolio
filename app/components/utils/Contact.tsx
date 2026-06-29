@@ -7,7 +7,14 @@ import "@/app/components/styles/Contact.css";
 const CONTACT_EMAIL =
   process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "aftabshaikh5498@gmail.com";
 
+const WEB3FORMS_ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
+
 type FormStatus = "idle" | "loading" | "success" | "error";
+
+type Web3FormsResponse = {
+  success: boolean;
+  message?: string;
+};
 
 const Contact = () => {
   const [name, setName] = useState("");
@@ -22,16 +29,34 @@ const Contact = () => {
     setFeedback("");
 
     try {
-      const response = await fetch("/api/contact", {
+      if (!WEB3FORMS_ACCESS_KEY) {
+        throw new Error("Email service is not configured.");
+      }
+
+      const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message }),
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_ACCESS_KEY,
+          name,
+          email,
+          message,
+          subject: `Portfolio contact from ${name}`,
+        }),
       });
 
-      const data = (await response.json()) as { error?: string };
+      const contentType = response.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("Email service returned an unexpected response.");
+      }
 
-      if (!response.ok) {
-        throw new Error(data.error ?? "Something went wrong.");
+      const data = (await response.json()) as Web3FormsResponse;
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message ?? "Something went wrong.");
       }
 
       setStatus("success");
@@ -51,11 +76,14 @@ const Contact = () => {
 
   return (
     <div className="contact-section section-container" id="contact">
-      <div className="contact-container">
+      <div className="contact-container pointer-events-auto">
         <h3 className="contact-heading">LET&apos;S WORK TOGETHER</h3>
 
         <div className="contact-layout">
-          <form className="contact-form-card" onSubmit={handleSubmit}>
+          <form
+            className="contact-form-card pointer-events-auto"
+            onSubmit={handleSubmit}
+          >
             <div className="contact-form-header">
               <h4>Contact Form</h4>
               <p>

@@ -25,40 +25,10 @@ type SectionStates = {
   desktop: TransformProfile;
 };
 
-const SKILLS_KEYBOARD_STATE: SectionStates = {
-  desktop: {
-    scale: { x: 0.25, y: 0.25, z: 0.25 },
-    position: { x: 0, y: 0, z: 0 },
-    rotation: {
-      x: 0,
-      y: Math.PI / 12,
-      z: 0,
-    },
-  },
-  tablet: {
-    scale: { x: 0.28, y: 0.28, z: 0.28 },
-    position: { x: 0, y: -60, z: 0 },
-    rotation: {
-      x: 0,
-      y: Math.PI / 8,
-      z: 0,
-    },
-  },
-  mobile: {
-    scale: { x: 0.26, y: 0.26, z: 0.26 },
-    position: { x: 0, y: -30, z: 0 },
-    rotation: {
-      x: 0,
-      y: Math.PI / 6,
-      z: 0,
-    },
-  },
-};
-
 export const STATES: Record<Section, SectionStates> = {
   hero: {
     desktop: {
-      scale: { x: 0.32, y: 0.32, z: 0.32 },
+      scale: { x: 0.20, y: 0.20, z: 0.20 },
       position: { x: 0, y: 0, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
     },
@@ -102,63 +72,119 @@ export const STATES: Record<Section, SectionStates> = {
       },
     },
   },
-  experience: {
+  techStack: {
     desktop: {
-      scale: { x: 0.25, y: 0.25, z: 0.25 },
-      position: { x: 0, y: -40, z: 0 },
+      scale: { x: 0.22, y: 0.22, z: 0.22 },
+      position: { x: 0, y: -20, z: 0 },
       rotation: {
-        x: Math.PI / 12,
-        y: -Math.PI / 4,
+        x: 0,
+        y: Math.PI / 10,
         z: 0,
       },
     },
     tablet: {
-      scale: { x: 0.28, y: 0.28, z: 0.28 },
-      position: { x: 0, y: -40, z: 0 },
+      scale: { x: 0.26, y: 0.26, z: 0.26 },
+      position: { x: 0, y: -80, z: 0 },
       rotation: {
-        x: Math.PI / 8,
-        y: -Math.PI / 6,
+        x: 0,
+        y: Math.PI / 9,
         z: 0,
       },
     },
     mobile: {
       scale: { x: 0.24, y: 0.24, z: 0.24 },
-      position: { x: 0, y: -30, z: 0 },
+      position: { x: 0, y: -50, z: 0 },
       rotation: {
-        x: Math.PI / 6,
-        y: -Math.PI / 6,
+        x: 0,
+        y: Math.PI / 8,
         z: 0,
       },
     },
   },
-  techStack: SKILLS_KEYBOARD_STATE,
-  skills: SKILLS_KEYBOARD_STATE,
-  projects: {
+  skills: {
     desktop: {
-      scale: { x: 0.25, y: 0.25, z: 0.25 },
-      position: { x: 0, y: -40, z: 0 },
+      scale: { x: 0.22, y: 0.22, z: 0.22 },
+      position: { x: 280, y: -80, z: 0 },
       rotation: {
-        x: Math.PI,
-        y: Math.PI / 3,
-        z: Math.PI,
+        x: 0,
+        y: Math.PI / 12,
+        z: 0,
       },
     },
     tablet: {
-      scale: { x: 0.28, y: 0.28, z: 0.28 },
-      position: { x: 0, y: 80, z: 0 },
+      scale: { x: 0.24, y: 0.24, z: 0.24 },
+      position: { x: 100, y: 20, z: 0 },
       rotation: {
-        x: Math.PI,
-        y: Math.PI / 3,
-        z: Math.PI,
+        x: 0,
+        y: Math.PI / 8,
+        z: 0,
       },
     },
     mobile: {
-      scale: { x: 0.24, y: 0.24, z: 0.24 },
-      position: { x: 0, y: 80, z: 0 },
+      scale: { x: 0.2, y: 0.2, z: 0.2 },
+      position: { x: 0, y: 140, z: 0 },
       rotation: {
-        x: Math.PI,
-        y: Math.PI / 3,
-        z: Math.PI,
+        x: 0,
+        y: Math.PI / 6,
+        z: 0,
+      },
+    },
+  },
+  experience: {
+    desktop: {
+      scale: { x: 0.2, y: 0.2, z: 0.2 },
+      position: { x: 300, y: -120, z: 0 },
+      rotation: {
+        x: 0,
+        y: Math.PI / 10,
+        z: 0,
+      },
+    },
+    tablet: {
+      scale: { x: 0.22, y: 0.22, z: 0.22 },
+      position: { x: 120, y: 40, z: 0 },
+      rotation: {
+        x: 0,
+        y: Math.PI / 8,
+        z: 0,
+      },
+    },
+    mobile: {
+      scale: { x: 0.18, y: 0.18, z: 0.18 },
+      position: { x: 0, y: 160, z: 0 },
+      rotation: {
+        x: 0,
+        y: Math.PI / 6,
+        z: 0,
+      },
+    },
+  },
+  projects: {
+    desktop: {
+      scale: { x: 0.2, y: 0.2, z: 0.2 },
+      position: { x: 300, y: -100, z: 0 },
+      rotation: {
+        x: 0,
+        y: Math.PI / 8,
+        z: 0,
+      },
+    },
+    tablet: {
+      scale: { x: 0.22, y: 0.22, z: 0.22 },
+      position: { x: 100, y: 60, z: 0 },
+      rotation: {
+        x: 0,
+        y: Math.PI / 8,
+        z: 0,
+      },
+    },
+    mobile: {
+      scale: { x: 0.18, y: 0.18, z: 0.18 },
+      position: { x: 0, y: 160, z: 0 },
+      rotation: {
+        x: 0,
+        y: Math.PI / 6,
+        z: 0,
       },
     },
   },
@@ -173,21 +199,21 @@ export const STATES: Record<Section, SectionStates> = {
       },
     },
     tablet: {
-      scale: { x: 0.22, y: 0.22, z: 0.22 },
-      position: { x: 0, y: 80, z: 0 },
+      scale: { x: 0.18, y: 0.18, z: 0.18 },
+      position: { x: 200, y: 20, z: 0 },
       rotation: {
-        x: Math.PI,
-        y: Math.PI / 3,
-        z: Math.PI,
+        x: 0,
+        y: Math.PI / 8,
+        z: 0,
       },
     },
     mobile: {
-      scale: { x: 0.22, y: 0.22, z: 0.22 },
-      position: { x: 0, y: 80, z: 0 },
+      scale: { x: 0.16, y: 0.16, z: 0.16 },
+      position: { x: 0, y: 140, z: 0 },
       rotation: {
-        x: Math.PI,
-        y: Math.PI / 3,
-        z: Math.PI,
+        x: 0,
+        y: Math.PI / 6,
+        z: 0,
       },
     },
   },

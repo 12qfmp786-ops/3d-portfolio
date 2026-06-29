@@ -1,6 +1,6 @@
 # 3D Portfolio
 
-A Next.js portfolio with an interactive 3D keyboard background, scroll-driven animations, and a Resend-powered contact form.
+A Next.js portfolio with an interactive 3D keyboard background, scroll-driven animations, and a Web3Forms-powered contact form.
 
 ## Getting Started
 
@@ -20,23 +20,22 @@ cp .env.example .env.local
 
 | Variable | Required | Description |
 | --- | --- | --- |
-| `RESEND_API_KEY` | Yes | API key from [Resend](https://resend.com/api-keys) |
-| `RESEND_FROM_EMAIL` | Yes | Verified sender address in Resend, e.g. `Portfolio Contact <hello@yourdomain.com>` |
-| `CONTACT_EMAIL` | Yes | Inbox that receives form submissions |
+| `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY` | Yes | Access key from [Web3Forms](https://web3forms.com) |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | No | Email shown in the contact form subtitle. Use an obfuscated format like `you(at)example.com` if you prefer |
 
-### 3. Set up Resend
+### 3. Set up Web3Forms
 
-1. Create a free account at [resend.com](https://resend.com).
-2. Add and verify your domain under **Domains**, or use Resend's test sender (`onboarding@resend.dev`) while developing.
-3. Create an API key under **API Keys**.
-4. Add the key and email values to `.env.local`.
+1. Go to [web3forms.com](https://web3forms.com).
+2. Enter the email address that should **receive** form submissions.
+3. Copy the **Access Key** sent to your inbox.
+4. Add it to `.env.local` as `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY`.
 
 **Notes:**
 
-- `RESEND_FROM_EMAIL` must use a verified domain in production.
-- With the default test sender, Resend only delivers to the email address tied to your Resend account.
-- `CONTACT_EMAIL` is where submissions are delivered. `NEXT_PUBLIC_CONTACT_EMAIL` is only for display in the UI.
+- Web3Forms free tier requires **client-side** submission (handled in `Contact.tsx`).
+- The access key is public by design — Web3Forms restricts usage by domain.
+- Submissions are delivered to the email you used when creating the access key.
+- Free tier includes 250 submissions per month.
 
 ### 4. Run the development server
 
@@ -52,32 +51,24 @@ The contact section includes:
 
 - **Heading:** "LET'S WORK TOGETHER"
 - **Fields:** full name, email address, message
-- **API route:** `POST /api/contact`
+- **Submission:** posts directly to Web3Forms from the browser
 
-### Request format
+### Request payload
 
 ```json
 {
+  "access_key": "your-access-key",
   "name": "Jane Doe",
   "email": "jane@example.com",
-  "message": "I'd like to discuss a project."
+  "message": "I'd like to discuss a project.",
+  "subject": "Portfolio contact from Jane Doe"
 }
 ```
 
-### Success response
-
-```json
-{ "success": true }
-```
-
-### Error responses
-
-The API returns `400` for validation errors and `500`/`502` when email delivery fails.
-
 ## Usage in production
 
-1. Set the same environment variables in your hosting provider (e.g. Vercel project settings).
-2. Verify your sending domain in Resend before going live.
+1. Set `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY` in your hosting provider (e.g. Vercel project settings).
+2. Add your production domain in the Web3Forms dashboard if domain restriction is enabled.
 3. Deploy as usual:
 
 ```bash
@@ -89,9 +80,8 @@ npm start
 
 ```
 app/
-  api/contact/route.ts    # Resend email handler
   components/
-    utils/Contact.tsx     # Contact form UI
+    utils/Contact.tsx     # Contact form UI + Web3Forms submission
     styles/Contact.css    # Contact section styles
 ```
 
@@ -107,4 +97,4 @@ app/
 ## Learn More
 
 - [Next.js Documentation](https://nextjs.org/docs)
-- [Resend Documentation](https://resend.com/docs)
+- [Web3Forms Documentation](https://docs.web3forms.com)
