@@ -149,9 +149,9 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
     const applyState = (section: Section) => {
       const state = getKeyboardState({ section, viewport: getViewport() });
-      gsap.to(kbd.scale, { ...state.scale, duration: 1.4, ease: "power2.inOut", overwrite: true });
-      gsap.to(kbd.position, { ...state.position, duration: 1.4, ease: "power2.inOut", overwrite: true });
-      gsap.to(kbd.rotation, { ...state.rotation, duration: 1.4, ease: "power2.inOut", overwrite: true });
+      gsap.to(kbd.scale, { ...state.scale, duration: 1 });
+      gsap.to(kbd.position, { ...state.position, duration: 1 });
+      gsap.to(kbd.rotation, { ...state.rotation, duration: 1 });
     };
 
     return gsap.timeline({
@@ -169,6 +169,9 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
         onEnterBack: () => {
           setActiveSection(targetSection);
           applyState(targetSection);
+        },
+        onLeave: () => {
+          setActiveSection(targetSection);
         },
         onLeaveBack: () => {
           setActiveSection(prevSection);

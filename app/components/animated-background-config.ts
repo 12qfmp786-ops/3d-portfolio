@@ -38,8 +38,8 @@ export const STATES: Record<Section, SectionStates> = {
       rotation: { x: 0, y: 0, z: 0 },
     },
     mobile: {
-      scale: { x: 0.26, y: 0.26, z: 0.26 },
-      position: { x: 0, y: -80, z: 0 },
+      scale: { x: 0.42, y: 0.42, z: 0.42 },
+      position: { x: 0, y: -160, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
     },
   },
@@ -284,7 +284,21 @@ export const getKeyboardState = ({
 }) => {
   const baseTransform = STATES[section][viewport];
   const scaleOffset = getScaleOffset(viewport);
-  const position = getResponsivePosition(baseTransform.position, viewport);
+  let position = getResponsivePosition(baseTransform.position, viewport);
+
+  // Hero mobile: keep keyboard centered — skip height-based drift on position.y
+  if (section === "hero" && viewport === "mobile") {
+    const wRatio = clamp(
+      getViewportWidth() / REF_BY_VIEWPORT.mobile.width,
+      0.75,
+      1.15,
+    );
+    position = {
+      x: baseTransform.position.x * wRatio,
+      y: baseTransform.position.y,
+      z: baseTransform.position.z,
+    };
+  }
 
   return {
     ...baseTransform,
