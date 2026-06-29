@@ -20,7 +20,7 @@
 
 .contact-layout {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   margin-top: 40px;
   /* padding-left: 100px; */
 }
