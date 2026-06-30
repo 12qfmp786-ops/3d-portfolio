@@ -208,6 +208,11 @@ body[data-keyboard-section="hero"] .landing-info {
   z-index: 2;
 }
 
+#tech-stack-header {
+  position: relative;
+  z-index: 2;
+}
+
 /* Skills, career, projects, contact, tech stack: content above keyboard */
 #smooth-content > section,
 #smooth-content > .whatIDO,

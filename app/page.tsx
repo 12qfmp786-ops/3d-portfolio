@@ -2,19 +2,13 @@
 import { LoadingProvider } from "@/app/components/context/LoadingProvider";
 import { useDevInitialFX } from "@/app/components/hooks/useDevInitialFX";
 import { useScrollSmoother } from "@/app/components/hooks/useScrollSmoother";
-import Landing from "@/app/components/utils/Landing";
+import AnimatedBackground from "@/app/components/animated-background";
+import KeyboardSections from "@/app/components/keyboard-sections";
+import StaticPageSections from "@/app/components/static-page-sections";
 import Navbar from "@/app/components/utils/navbar";
-import WhatIDo from "@/app/components/utils/WhatIDo";
-import TechStack from "@/app/components/utils/tech-Stack";
 import "@/app/components/index.css";
 import MainContainer from "@/app/components/utils/MainContainer";
-import Career from "@/app/components/utils/Career";
 import SocialIcons from "@/app/components/utils/SocialIcons";
-import Contact from "@/app/components/utils/Contact";
-import Projects from "@/app/components/utils/projects";
-// Keyboard disabled — uncomment to restore the 3D Spline background
-import AnimatedBackground from "@/app/components/animated-background";
-import Footer from "@/app/components/footer/footer";
 
 function HomeContent() {
   useDevInitialFX();
@@ -26,15 +20,10 @@ function HomeContent() {
       <AnimatedBackground />
       <div id="smooth-wrapper">
         <div id="smooth-content">
-          <Landing>
+          <KeyboardSections>
             <MainContainer />
-          </Landing>
-          <TechStack />
-          <WhatIDo />
-          <Career />
-          <Projects />
-          <Contact />
-          <Footer />
+          </KeyboardSections>
+          <StaticPageSections />
         </div>
       </div>
       <Navbar />

@@ -9,7 +9,12 @@ import { Skill, SkillNames, SKILLS } from "@/app/components/data/constants";
 import { sleep } from "@/app/components/lib/utils";
 import { getViewport, isCompactViewport, useViewport } from "@/app/components/hooks/use-viewport";
 import { useLoading } from "@/app/components/context/LoadingProvider";
-import { Section, KeyboardSection, getKeyboardState } from "@/app/components/animated-background-config";
+import {
+  Section,
+  KeyboardSection,
+  KEYBOARD_SECTION_IDS,
+  getKeyboardState,
+} from "@/app/components/animated-background-config";
 import { useSounds } from "@/app/components/hooks/use-sounds";
 import { usePerfProfile } from "@/app/components/hooks/use-perf-profile";
 import { LAYOUT_READY_EVENT } from "@/app/components/util/initialFX";
@@ -115,8 +120,8 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   };
 
   const refreshKeyboardLayout = () => {
-    if (activeSection !== "hidden") {
-      applyKeyboardLayout();
+    if (activeSection === "hero") {
+      applyKeyboardLayout("hero");
     }
     const scene = keyboardSceneRef.current;
     if (scene) {
@@ -139,69 +144,84 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     setPortalTarget(document.body);
   }, []);
 
-  const createSectionTimeline = (
-    triggerId: string,
-    targetSection: KeyboardSection,
-    prevSection: KeyboardSection,
-    start: string = "top 50%",
-    end: string = "bottom bottom"
-  ) => {
-    if (!splineApp) return;
-    const kbd = splineApp.findObjectByName("keyboard");
-    if (!kbd) return;
-
-    const applyState = (section: KeyboardSection) => {
-      const state = getKeyboardState({ section, viewport: getViewport() });
-      gsap.to(kbd.scale, { ...state.scale, duration: 1 });
-      gsap.to(kbd.position, { ...state.position, duration: 1 });
-      gsap.to(kbd.rotation, { ...state.rotation, duration: 1 });
-    };
-
-    return gsap.timeline({
-      scrollTrigger: {
-        trigger: triggerId,
-        scroller: "#smooth-wrapper",
-        start,
-        end,
-        scrub: true,
-        invalidateOnRefresh: true,
-        onEnter: () => {
-          setActiveSection(targetSection);
-          applyState(targetSection);
-        },
-        onEnterBack: () => {
-          setActiveSection(targetSection);
-          applyState(targetSection);
-        },
-        onLeave: () => {
-          setActiveSection(targetSection);
-        },
-        onLeaveBack: () => {
-          setActiveSection(prevSection);
-          applyState(prevSection);
-        },
-      },
-    });
-  };
-
   const setupScrollAnimations = (): (gsap.core.Timeline | ScrollTrigger)[] => {
     if (!splineApp || !keyboardSceneRef.current) return [];
 
+    const heroEl = document.querySelector(KEYBOARD_SECTION_IDS.hero);
+    const techStackEl = document.querySelector(KEYBOARD_SECTION_IDS.techStack);
+    if (!heroEl || !techStackEl) return [];
+
+    const kbd = splineApp.findObjectByName("keyboard");
+    if (!kbd) return [];
+
     applyKeyboardLayout("hero");
 
-    const hideAfterTechStack = ScrollTrigger.create({
-      trigger: "#skills",
-      scroller: "#smooth-wrapper",
-      start: "top 90%",
-      onEnter: () => setActiveSection("hidden"),
-      onLeaveBack: () => setActiveSection("techStack"),
+    const vp = getViewport();
+    const heroState = getKeyboardState({ section: "hero", viewport: vp });
+    const techState = getKeyboardState({ section: "techStack", viewport: vp });
+
+    const triggers: (gsap.core.Timeline | ScrollTrigger)[] = [
+      ScrollTrigger.create({
+        trigger: KEYBOARD_SECTION_IDS.hero,
+        scroller: "#smooth-wrapper",
+        start: "top top",
+        end: "bottom top",
+        onEnter: () => setActiveSection("hero"),
+        onEnterBack: () => setActiveSection("hero"),
+        onLeaveBack: () => setActiveSection("hero"),
+      }),
+    ];
+
+    const techStackTimeline = gsap.timeline({
+      scrollTrigger: {
+        id: "tech-stack-keyboard",
+        trigger: KEYBOARD_SECTION_IDS.techStack,
+        scroller: "#smooth-wrapper",
+        start: "top bottom",
+        end: "top 35%",
+        scrub: true,
+        invalidateOnRefresh: true,
+        onEnter: () => setActiveSection("techStack"),
+        onLeaveBack: () => setActiveSection("hero"),
+      },
     });
 
-    return [
-      createSectionTimeline("#hero", "hero", "hero", "top top", "bottom 40%"),
-      createSectionTimeline("#tech-stack", "techStack", "hero"),
-      hideAfterTechStack,
-    ].filter(Boolean) as (gsap.core.Timeline | ScrollTrigger)[];
+    techStackTimeline
+      .fromTo(
+        kbd.scale,
+        { ...heroState.scale },
+        { ...techState.scale, ease: "none" },
+        0
+      )
+      .fromTo(
+        kbd.position,
+        { ...heroState.position },
+        { ...techState.position, ease: "none" },
+        0
+      )
+      .fromTo(
+        kbd.rotation,
+        { ...heroState.rotation },
+        { ...techState.rotation, ease: "none" },
+        0
+      );
+
+    triggers.push(techStackTimeline);
+
+    const boundaryEl = document.querySelector(KEYBOARD_SECTION_IDS.boundary);
+    if (boundaryEl) {
+      triggers.push(
+        ScrollTrigger.create({
+          trigger: KEYBOARD_SECTION_IDS.boundary,
+          scroller: "#smooth-wrapper",
+          start: "top bottom",
+          onEnter: () => setActiveSection("hidden"),
+          onLeaveBack: () => setActiveSection("techStack"),
+        })
+      );
+    }
+
+    return triggers;
   };
 
   const getKeySection = (section: Section): KeyboardSection =>
@@ -325,7 +345,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
       window.removeEventListener(LAYOUT_READY_EVENT, updateKeyboardLayout);
       resizeObserver?.disconnect();
     };
-  }, [splineApp, viewport, activeSection]);
+  }, [splineApp, viewport]);
 
   // Handle keyboard text visibility based on theme and section
   useEffect(() => {
@@ -421,7 +441,10 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     scene?.classList.remove("keyboard-scene--hidden");
     if (kbd) kbd.visible = true;
     if (!document.hidden) splineApp.play();
-    applyKeyboardLayout(activeSection);
+
+    if (activeSection === "hero") {
+      applyKeyboardLayout("hero");
+    }
   }, [activeSection, splineApp]);
 
   useEffect(() => {

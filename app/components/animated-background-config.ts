@@ -8,6 +8,24 @@ export type Section = "hero" | "techStack" | "hidden";
 
 export type KeyboardSection = "hero" | "techStack";
 
+/** DOM anchors the keyboard scroll system is allowed to bind to. */
+export const KEYBOARD_SECTION_IDS = {
+  hero: "#hero",
+  techStackHeader: "#tech-stack-header",
+  techStack: "#tech-stack",
+  boundary: "#keyboard-boundary",
+} as const;
+
+/** Push the tech-stack keyboard below the header block in scene space. */
+export const getTechStackHeaderOffsetY = (): number => {
+  if (typeof document === "undefined") return 0;
+  const header = document.querySelector<HTMLElement>(
+    KEYBOARD_SECTION_IDS.techStackHeader,
+  );
+  if (!header) return 0;
+  return -header.getBoundingClientRect().height * 0.5;
+};
+
 type TransformProfile = {
   scale: { x: number; y: number; z: number };
   position: { x: number; y: number; z: number };
@@ -41,7 +59,7 @@ export const STATES: Record<KeyboardSection, SectionStates> = {
   techStack: {
     desktop: {
       scale: { x: 0.22, y: 0.22, z: 0.22 },
-      position: { x: 0, y: -20, z: 0 },
+      position: { x: 0, y: -310, z: 0 },
       rotation: {
         x: 0,
         y: Math.PI / 10,
@@ -50,7 +68,7 @@ export const STATES: Record<KeyboardSection, SectionStates> = {
     },
     tablet: {
       scale: { x: 0.26, y: 0.26, z: 0.26 },
-      position: { x: 0, y: -80, z: 0 },
+      position: { x: 0, y: -120, z: 0 },
       rotation: {
         x: 0,
         y: Math.PI / 9,
@@ -59,7 +77,7 @@ export const STATES: Record<KeyboardSection, SectionStates> = {
     },
     mobile: {
       scale: { x: 0.24, y: 0.24, z: 0.24 },
-      position: { x: 0, y: -50, z: 0 },
+      position: { x: 0, y: -90, z: 0 },
       rotation: {
         x: 0,
         y: Math.PI / 8,
@@ -144,6 +162,13 @@ export const getKeyboardState = ({
       x: baseTransform.position.x * wRatio,
       y: baseTransform.position.y,
       z: baseTransform.position.z,
+    };
+  }
+
+  if (section === "techStack") {
+    position = {
+      ...position,
+      y: position.y + getTechStackHeaderOffsetY(),
     };
   }
 
