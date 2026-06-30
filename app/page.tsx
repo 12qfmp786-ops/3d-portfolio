@@ -13,7 +13,7 @@ import SocialIcons from "@/app/components/utils/SocialIcons";
 import Contact from "@/app/components/utils/Contact";
 import Projects from "@/app/components/utils/projects";
 // Keyboard disabled — uncomment to restore the 3D Spline background
-// import AnimatedBackground from "@/app/components/animated-background";
+import AnimatedBackground from "@/app/components/animated-background";
 import Footer from "@/app/components/footer/footer";
 
 function HomeContent() {
@@ -23,7 +23,7 @@ function HomeContent() {
   return (
     <>
       {/* Outside smooth-wrapper so position:fixed tracks the viewport, not a transformed scroll layer */}
-      {/* <AnimatedBackground /> */}
+      <AnimatedBackground />
       <div id="smooth-wrapper">
         <div id="smooth-content">
           <Landing>

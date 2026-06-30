@@ -9,7 +9,7 @@ import { Skill, SkillNames, SKILLS } from "@/app/components/data/constants";
 import { sleep } from "@/app/components/lib/utils";
 import { getViewport, isCompactViewport, useViewport } from "@/app/components/hooks/use-viewport";
 import { useLoading } from "@/app/components/context/LoadingProvider";
-import { Section, getKeyboardState } from "@/app/components/animated-background-config";
+import { Section, KeyboardSection, getKeyboardState } from "@/app/components/animated-background-config";
 import { useSounds } from "@/app/components/hooks/use-sounds";
 import { usePerfProfile } from "@/app/components/hooks/use-perf-profile";
 import { LAYOUT_READY_EVENT } from "@/app/components/util/initialFX";
@@ -38,10 +38,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [activeSection, setActiveSection] = useState<Section>("hero");
-
-  // Animation controllers refs
-  const bongoAnimationRef = useRef<{ start: () => void; stop: () => void }>(null);
-  const keycapAnimationsRef = useRef<{ start: () => void; stop: () => void }>(null);
+  const activeSectionRef = useRef<Section>("hero");
 
   const [keyboardRevealed, setKeyboardRevealed] = useState(false);
   const [layoutReady, setLayoutReady] = useState(false);
@@ -50,7 +47,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   // --- Event Handlers ---
 
   const handleMouseHover = (e: SplineEvent) => {
-    if (!splineApp || selectedSkillRef.current?.name === e.target.name) return;
+    if (!splineApp || activeSectionRef.current === "hidden" || selectedSkillRef.current?.name === e.target.name) return;
 
     if (e.target.name === "body" || e.target.name === "platform") {
       if (selectedSkillRef.current) playReleaseSound();
@@ -87,13 +84,13 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     };
 
     splineApp.addEventListener("keyUp", () => {
-      if (!splineApp || isInputFocused()) return;
+      if (!splineApp || activeSectionRef.current === "hidden" || isInputFocused()) return;
       playReleaseSound();
       setSplineVariable(splineApp, "heading", "");
       setSplineVariable(splineApp, "desc", "");
     });
     splineApp.addEventListener("keyDown", (e) => {
-      if (!splineApp || isInputFocused()) return;
+      if (!splineApp || activeSectionRef.current === "hidden" || isInputFocused()) return;
       const skill = SKILLS[e.target.name as SkillNames];
       if (skill) {
         playPressSound();
@@ -107,7 +104,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   };
 
   const applyKeyboardLayout = (section: Section = activeSection) => {
-    if (!splineApp) return;
+    if (!splineApp || section === "hidden") return;
     syncSplineCanvasSize(splineApp, keyboardSceneRef.current);
     const kbd = splineApp.findObjectByName("keyboard");
     if (!kbd) return;
@@ -118,7 +115,9 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   };
 
   const refreshKeyboardLayout = () => {
-    applyKeyboardLayout();
+    if (activeSection !== "hidden") {
+      applyKeyboardLayout();
+    }
     const scene = keyboardSceneRef.current;
     if (scene) {
       const { width, height } = scene.getBoundingClientRect();
@@ -133,13 +132,17 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   };
 
   useEffect(() => {
+    activeSectionRef.current = activeSection;
+  }, [activeSection]);
+
+  useEffect(() => {
     setPortalTarget(document.body);
   }, []);
 
   const createSectionTimeline = (
     triggerId: string,
-    targetSection: Section,
-    prevSection: Section,
+    targetSection: KeyboardSection,
+    prevSection: KeyboardSection,
     start: string = "top 50%",
     end: string = "bottom bottom"
   ) => {
@@ -147,7 +150,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     const kbd = splineApp.findObjectByName("keyboard");
     if (!kbd) return;
 
-    const applyState = (section: Section) => {
+    const applyState = (section: KeyboardSection) => {
       const state = getKeyboardState({ section, viewport: getViewport() });
       gsap.to(kbd.scale, { ...state.scale, duration: 1 });
       gsap.to(kbd.position, { ...state.position, duration: 1 });
@@ -181,102 +184,31 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     });
   };
 
-  const setupScrollAnimations = (): gsap.core.Timeline[] => {
+  const setupScrollAnimations = (): (gsap.core.Timeline | ScrollTrigger)[] => {
     if (!splineApp || !keyboardSceneRef.current) return [];
 
     applyKeyboardLayout("hero");
 
-    // Section transitions
+    const hideAfterTechStack = ScrollTrigger.create({
+      trigger: "#skills",
+      scroller: "#smooth-wrapper",
+      start: "top 90%",
+      onEnter: () => setActiveSection("hidden"),
+      onLeaveBack: () => setActiveSection("techStack"),
+    });
+
     return [
       createSectionTimeline("#hero", "hero", "hero", "top top", "bottom 40%"),
       createSectionTimeline("#tech-stack", "techStack", "hero"),
-      createSectionTimeline("#skills", "skills", "techStack"),
-      createSectionTimeline("#experience", "experience", "skills"),
-      createSectionTimeline("#projects", "projects", "experience", "top 70%"),
-      createSectionTimeline("#contact", "contact", "projects", "top 30%"),
-    ].filter(Boolean) as gsap.core.Timeline[];
+      hideAfterTechStack,
+    ].filter(Boolean) as (gsap.core.Timeline | ScrollTrigger)[];
   };
 
-  const getBongoAnimation = () => {
-    const framesParent = splineApp?.findObjectByName("bongo-cat");
-    const frame1 = splineApp?.findObjectByName("frame-1");
-    const frame2 = splineApp?.findObjectByName("frame-2");
-
-    if (!frame1 || !frame2 || !framesParent) {
-      return { start: () => { }, stop: () => { } };
-    }
-
-    let interval: NodeJS.Timeout;
-    const start = () => {
-      let i = 0;
-      framesParent.visible = true;
-      interval = setInterval(() => {
-        if (i % 2) {
-          frame1.visible = false;
-          frame2.visible = true;
-        } else {
-          frame1.visible = true;
-          frame2.visible = false;
-        }
-        i++;
-      }, 100);
-    };
-    const stop = () => {
-      clearInterval(interval);
-      framesParent.visible = false;
-      frame1.visible = false;
-      frame2.visible = false;
-    };
-    return { start, stop };
-  };
-
-  const getKeycapsAnimation = () => {
-    if (!splineApp) return { start: () => { }, stop: () => { } };
-
-    let tweens: gsap.core.Tween[] = [];
-    const removePrevTweens = () => tweens.forEach((t) => t.kill());
-
-    const start = () => {
-      removePrevTweens();
-      Object.values(SKILLS)
-        .sort(() => Math.random() - 0.5)
-        .forEach((skill, idx) => {
-          const keycap = splineApp.findObjectByName(skill.name);
-          if (!keycap) return;
-          const t = gsap.to(keycap.position, {
-            y: Math.random() * 200 + 200,
-            duration: Math.random() * 2 + 2,
-            delay: idx * 0.6,
-            repeat: -1,
-            yoyo: true,
-            yoyoEase: "none",
-            ease: "elastic.out(1,0.3)",
-          });
-          tweens.push(t);
-        });
-    };
-
-    const stop = () => {
-      removePrevTweens();
-      Object.values(SKILLS).forEach((skill) => {
-        const keycap = splineApp.findObjectByName(skill.name);
-        if (!keycap) return;
-        const t = gsap.to(keycap.position, {
-          y: 0,
-          duration: 4,
-          repeat: 1,
-          ease: "elastic.out(1,0.7)",
-        });
-        tweens.push(t);
-      });
-      setTimeout(removePrevTweens, 1000);
-    };
-
-    return { start, stop };
-  };
+  const getKeySection = (section: Section): KeyboardSection =>
+    section === "hidden" ? "techStack" : section;
 
   const updateKeyboardTransform = async () => {
-    if (!splineApp) return;
+    if (!splineApp || activeSection === "hidden") return;
     const kbd = splineApp.findObjectByName("keyboard");
     if (!kbd) return;
 
@@ -288,7 +220,10 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     setKeyboardRevealed(true);
 
     refreshKeyboardLayout();
-    const currentState = getKeyboardState({ section: activeSection, viewport });
+    const currentState = getKeyboardState({
+      section: getKeySection(activeSection),
+      viewport,
+    });
     gsap.fromTo(
       kbd.scale,
       { x: 0.01, y: 0.01, z: 0.01 },
@@ -338,20 +273,17 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     if (!splineApp) return;
     handleSplineInteractions();
     const timelines = setupScrollAnimations();
-    bongoAnimationRef.current = getBongoAnimation();
-    keycapAnimationsRef.current = getKeycapsAnimation();
     ScrollTrigger.refresh(true);
     return () => {
-      bongoAnimationRef.current?.stop()
-      keycapAnimationsRef.current?.stop()
-      // Kill the section ScrollTriggers so they don't orphan when the scene
-      // unmounts (e.g. toggling reduced motion) and fire on the disposed app.
-      timelines.forEach((tl) => {
-        tl.scrollTrigger?.kill();
-        tl.kill();
+      timelines.forEach((item) => {
+        if (item instanceof ScrollTrigger) {
+          item.kill();
+        } else {
+          item.scrollTrigger?.kill();
+          item.kill();
+        }
       });
-    }
-
+    };
   }, [splineApp, viewport]);
 
   // Re-apply keyboard layout on viewport resize (mobile, tablet, desktop)
@@ -417,7 +349,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
       textMobileLight.visible = mLight;
     };
 
-    if (activeSection !== "skills" && activeSection !== "techStack") {
+    if (activeSection !== "techStack") {
       setVisibility(false, false, false, false);
     } else {
       isCompact
@@ -432,13 +364,11 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     setSplineVariable(splineApp, "desc", selectedSkill.shortDescription);
   }, [selectedSkill]);
 
-  // Handle rotation and teardown animations based on active section
+  // Hero idle rotation only; keyboard is fully disabled when hidden
   useEffect(() => {
-    if (!splineApp) return;
+    if (!splineApp || activeSection === "hidden") return;
 
     let rotateKeyboard: gsap.core.Tween | undefined;
-    let teardownKeyboard: gsap.core.Tween | undefined;
-
     const kbd = splineApp.findObjectByName("keyboard");
 
     if (kbd) {
@@ -452,68 +382,46 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
         delay: 2.5,
         paused: true,
       });
-
-      teardownKeyboard = gsap.fromTo(
-        kbd.rotation,
-        { y: 0, x: -Math.PI, z: 0 },
-        {
-          y: -Math.PI / 2,
-          duration: 5,
-          repeat: -1,
-          yoyo: true,
-          yoyoEase: true,
-          delay: 2.5,
-          immediateRender: false,
-          paused: true,
-        }
-      );
     }
 
-    const manageAnimations = async () => {
-      // Reset text if not in skills
-      if (activeSection !== "skills" && activeSection !== "techStack") {
-        setSplineVariable(splineApp, "heading", "");
-        setSplineVariable(splineApp, "desc", "");
-      }
+    if (activeSection !== "techStack") {
+      setSplineVariable(splineApp, "heading", "");
+      setSplineVariable(splineApp, "desc", "");
+    }
 
-      // Handle Rotate/Teardown Tweens
-      if (activeSection === "hero") {
-        rotateKeyboard?.restart();
-        teardownKeyboard?.pause();
-      } else if (activeSection === "contact") {
-        rotateKeyboard?.pause();
-      } else {
-        rotateKeyboard?.pause();
-        teardownKeyboard?.pause();
-      }
-
-      // Handle Bongo Cat
-      if (activeSection === "projects") {
-        await sleep(300);
-        bongoAnimationRef.current?.start();
-      } else {
-        await sleep(200);
-        bongoAnimationRef.current?.stop();
-      }
-
-      // Handle Contact Section Animations
-      if (activeSection === "contact") {
-        await sleep(600);
-        teardownKeyboard?.restart();
-        keycapAnimationsRef.current?.start();
-      } else {
-        await sleep(600);
-        teardownKeyboard?.pause();
-        keycapAnimationsRef.current?.stop();
-      }
-    };
-
-    manageAnimations();
+    if (activeSection === "hero") {
+      rotateKeyboard?.restart();
+    } else {
+      rotateKeyboard?.pause();
+    }
 
     return () => {
       rotateKeyboard?.kill();
-      teardownKeyboard?.kill();
     };
+  }, [activeSection, splineApp]);
+
+  // Stop rendering and interaction when leaving Tech Stack
+  useEffect(() => {
+    if (!splineApp) return;
+
+    const scene = keyboardSceneRef.current;
+    const kbd = splineApp.findObjectByName("keyboard");
+
+    if (activeSection === "hidden") {
+      splineApp.stop();
+      if (kbd) kbd.visible = false;
+      scene?.classList.add("keyboard-scene--hidden");
+      setSelectedSkill(null);
+      selectedSkillRef.current = null;
+      setSplineVariable(splineApp, "heading", "");
+      setSplineVariable(splineApp, "desc", "");
+      return;
+    }
+
+    scene?.classList.remove("keyboard-scene--hidden");
+    if (kbd) kbd.visible = true;
+    if (!document.hidden) splineApp.play();
+    applyKeyboardLayout(activeSection);
   }, [activeSection, splineApp]);
 
   useEffect(() => {
@@ -525,17 +433,9 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
   // Reveal keyboard on load/route change
   useEffect(() => {
-    // Rebuild the URL from the current pathname so the hash is always *replaced*
-    // rather than appended. Using router.push("/" + hash) stacked fragments on
-    // refresh (e.g. "/#skills#skills#skills") because the existing hash in the
-    // address bar was never stripped first. replaceState also avoids polluting
-    // browser history with an entry per scrolled-through section.
-    const hash =
-      activeSection === "hero"
-        ? ""
-        : activeSection === "techStack"
-          ? "#tech-stack"
-          : `#${activeSection}`;
+    if (activeSection === "hidden") return;
+
+    const hash = activeSection === "hero" ? "" : "#tech-stack";
     const url = window.location.pathname + window.location.search + hash;
     window.history.replaceState(window.history.state, "", url);
 
@@ -555,17 +455,17 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   useEffect(() => {
     if (!splineApp) return;
     const onVisibility = () => {
-      if (document.hidden) splineApp.stop();
+      if (document.hidden || activeSection === "hidden") splineApp.stop();
       else splineApp.play();
     };
     document.addEventListener("visibilitychange", onVisibility);
     return () => document.removeEventListener("visibilitychange", onVisibility);
-  }, [splineApp]);
+  }, [splineApp, activeSection]);
 
   return portalTarget
     ? createPortal(
         <div
-          className={`keyboard-scene${layoutReady ? " keyboard-scene--ready" : ""}`}
+          className={`keyboard-scene${layoutReady ? " keyboard-scene--ready" : ""}${activeSection === "hidden" ? " keyboard-scene--hidden" : ""}`}
           ref={keyboardSceneRef}
         >
           <Suspense fallback={null}>

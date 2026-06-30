@@ -179,9 +179,23 @@ body {
 }
 
 /* Non-hero: keyboard stays decorative — never steal clicks from content */
-body:not([data-keyboard-section="hero"]) .keyboard-scene canvas,
-body:not([data-keyboard-section="hero"]) .keyboard-spline-root {
+body:not([data-keyboard-section="hero"]):not([data-keyboard-section="techStack"]) .keyboard-scene canvas,
+body:not([data-keyboard-section="hero"]):not([data-keyboard-section="techStack"]) .keyboard-spline-root {
   pointer-events: none;
+}
+
+body[data-keyboard-section="techStack"] .keyboard-scene canvas,
+body[data-keyboard-section="techStack"] .keyboard-spline-root {
+  pointer-events: auto;
+}
+
+body[data-keyboard-section="hidden"] .keyboard-scene {
+  display: none;
+}
+
+.keyboard-scene--hidden {
+  display: none !important;
+  pointer-events: none !important;
 }
 
 /* Hero: keyboard in front of landing text, but below the fixed navbar */
