@@ -10,12 +10,12 @@ import Footer from "@/app/components/footer/footer";
  */
 export default function StaticPageSections() {
   return (
-    <>
+    <div className="static-page-sections">
       <WhatIDo />
       <Career />
       <Projects />
       <Contact />
       <Footer />
-    </>
+    </div>
   );
 }

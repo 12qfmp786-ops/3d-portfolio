@@ -120,7 +120,7 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   };
 
   const refreshKeyboardLayout = () => {
-    if (activeSection === "hero") {
+    if (activeSectionRef.current === "hero") {
       applyKeyboardLayout("hero");
     }
     const scene = keyboardSceneRef.current;
@@ -133,12 +133,68 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
         setLayoutReady(true);
       }
     }
-    ScrollTrigger.refresh(true);
+    if (activeSectionRef.current !== "hidden") {
+      ScrollTrigger.refresh(true);
+    }
   };
 
   useEffect(() => {
     activeSectionRef.current = activeSection;
   }, [activeSection]);
+
+  const setSection = (section: Section) => {
+    if (activeSectionRef.current === section) return;
+    activeSectionRef.current = section;
+    setActiveSection(section);
+  };
+
+  const freezeKeyboardAtTechStack = () => {
+    if (!splineApp) return;
+    const kbd = splineApp.findObjectByName("keyboard");
+    if (!kbd) return;
+    const techState = getKeyboardState({
+      section: "techStack",
+      viewport: getViewport(),
+    });
+    gsap.set(kbd.scale, techState.scale);
+    gsap.set(kbd.position, techState.position);
+    gsap.set(kbd.rotation, techState.rotation);
+  };
+
+  const showKeyboardScene = () => {
+    const scene = keyboardSceneRef.current;
+    if (scene) gsap.set(scene, { autoAlpha: 1 });
+    if (splineApp && !document.hidden) splineApp.play();
+    setKeyboardScrollPaused(false);
+  };
+
+  const hideKeyboardScene = () => {
+    const scene = keyboardSceneRef.current;
+    if (scene) gsap.set(scene, { autoAlpha: 0 });
+    splineApp?.stop();
+    setKeyboardScrollPaused(true);
+  };
+
+  const setKeyboardScrollPaused = (paused: boolean) => {
+    const enter = ScrollTrigger.getById("tech-stack-enter");
+    if (!enter) return;
+    if (paused) enter.disable(false, false);
+    else enter.enable(false, false);
+  };
+
+  const scrollTriggersRef = useRef<(gsap.core.Timeline | ScrollTrigger)[]>([]);
+
+  const killScrollAnimations = () => {
+    scrollTriggersRef.current.forEach((item) => {
+      if (item instanceof ScrollTrigger) {
+        item.kill();
+      } else {
+        item.scrollTrigger?.kill();
+        item.kill();
+      }
+    });
+    scrollTriggersRef.current = [];
+  };
 
   useEffect(() => {
     setPortalTarget(document.body);
@@ -149,12 +205,14 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
     const heroEl = document.querySelector(KEYBOARD_SECTION_IDS.hero);
     const techStackEl = document.querySelector(KEYBOARD_SECTION_IDS.techStack);
-    if (!heroEl || !techStackEl) return [];
+    const techStackZoneEl = document.querySelector(KEYBOARD_SECTION_IDS.techStackZone);
+    if (!heroEl || !techStackEl || !techStackZoneEl) return [];
 
     const kbd = splineApp.findObjectByName("keyboard");
     if (!kbd) return [];
 
     applyKeyboardLayout("hero");
+    showKeyboardScene();
 
     const vp = getViewport();
     const heroState = getKeyboardState({ section: "hero", viewport: vp });
@@ -166,23 +224,45 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
         scroller: "#smooth-wrapper",
         start: "top top",
         end: "bottom top",
-        onEnter: () => setActiveSection("hero"),
-        onEnterBack: () => setActiveSection("hero"),
-        onLeaveBack: () => setActiveSection("hero"),
+        onEnter: () => setSection("hero"),
+        onEnterBack: () => setSection("hero"),
+        onLeaveBack: () => setSection("hero"),
+      }),
+      ScrollTrigger.create({
+        id: "tech-stack-visibility",
+        trigger: KEYBOARD_SECTION_IDS.techStackZone,
+        scroller: "#smooth-wrapper",
+        start: "top bottom",
+        end: "bottom top",
+        onEnter: () => {
+          showKeyboardScene();
+          setSection("techStack");
+        },
+        onEnterBack: () => {
+          showKeyboardScene();
+          setSection("techStack");
+        },
+        onLeave: () => {
+          freezeKeyboardAtTechStack();
+          hideKeyboardScene();
+          setSection("hidden");
+        },
+        onLeaveBack: () => {
+          showKeyboardScene();
+          setSection("hero");
+        },
       }),
     ];
 
     const techStackTimeline = gsap.timeline({
       scrollTrigger: {
-        id: "tech-stack-keyboard",
+        id: "tech-stack-enter",
         trigger: KEYBOARD_SECTION_IDS.techStack,
         scroller: "#smooth-wrapper",
         start: "top bottom",
-        end: "top 35%",
+        end: "bottom top",
         scrub: true,
         invalidateOnRefresh: true,
-        onEnter: () => setActiveSection("techStack"),
-        onLeaveBack: () => setActiveSection("hero"),
       },
     });
 
@@ -208,20 +288,13 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
 
     triggers.push(techStackTimeline);
 
-    const boundaryEl = document.querySelector(KEYBOARD_SECTION_IDS.boundary);
-    if (boundaryEl) {
-      triggers.push(
-        ScrollTrigger.create({
-          trigger: KEYBOARD_SECTION_IDS.boundary,
-          scroller: "#smooth-wrapper",
-          start: "top bottom",
-          onEnter: () => setActiveSection("hidden"),
-          onLeaveBack: () => setActiveSection("techStack"),
-        })
-      );
-    }
-
     return triggers;
+  };
+
+  const mountScrollAnimations = () => {
+    killScrollAnimations();
+    scrollTriggersRef.current = setupScrollAnimations();
+    ScrollTrigger.refresh(true);
   };
 
   const getKeySection = (section: Section): KeyboardSection =>
@@ -292,17 +365,19 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   useEffect(() => {
     if (!splineApp) return;
     handleSplineInteractions();
-    const timelines = setupScrollAnimations();
-    ScrollTrigger.refresh(true);
+    mountScrollAnimations();
+
+    const retryScrollSetup = () => {
+      if (ScrollTrigger.getById("tech-stack-visibility")) return;
+      if (!document.querySelector(KEYBOARD_SECTION_IDS.techStackZone)) return;
+      mountScrollAnimations();
+    };
+
+    window.addEventListener(LAYOUT_READY_EVENT, retryScrollSetup);
+
     return () => {
-      timelines.forEach((item) => {
-        if (item instanceof ScrollTrigger) {
-          item.kill();
-        } else {
-          item.scrollTrigger?.kill();
-          item.kill();
-        }
-      });
+      window.removeEventListener(LAYOUT_READY_EVENT, retryScrollSetup);
+      killScrollAnimations();
     };
   }, [splineApp, viewport]);
 
@@ -420,27 +495,26 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
     };
   }, [activeSection, splineApp]);
 
-  // Stop rendering and interaction when leaving Tech Stack
+  // Past Tech Stack: freeze transform, pause WebGL, disable scrub triggers
   useEffect(() => {
     if (!splineApp) return;
 
-    const scene = keyboardSceneRef.current;
     const kbd = splineApp.findObjectByName("keyboard");
 
     if (activeSection === "hidden") {
-      splineApp.stop();
-      if (kbd) kbd.visible = false;
-      scene?.classList.add("keyboard-scene--hidden");
+      freezeKeyboardAtTechStack();
       setSelectedSkill(null);
       selectedSkillRef.current = null;
       setSplineVariable(splineApp, "heading", "");
       setSplineVariable(splineApp, "desc", "");
+      splineApp.stop();
+      setKeyboardScrollPaused(true);
       return;
     }
 
-    scene?.classList.remove("keyboard-scene--hidden");
     if (kbd) kbd.visible = true;
     if (!document.hidden) splineApp.play();
+    setKeyboardScrollPaused(false);
 
     if (activeSection === "hero") {
       applyKeyboardLayout("hero");
@@ -478,17 +552,17 @@ const KeyboardScene = ({ maxDpr }: { maxDpr: number }) => {
   useEffect(() => {
     if (!splineApp) return;
     const onVisibility = () => {
-      if (document.hidden || activeSection === "hidden") splineApp.stop();
-      else splineApp.play();
+      if (document.hidden) splineApp.stop();
+      else if (activeSectionRef.current !== "hidden") splineApp.play();
     };
     document.addEventListener("visibilitychange", onVisibility);
     return () => document.removeEventListener("visibilitychange", onVisibility);
-  }, [splineApp, activeSection]);
+  }, [splineApp]);
 
   return portalTarget
     ? createPortal(
         <div
-          className={`keyboard-scene${layoutReady ? " keyboard-scene--ready" : ""}${activeSection === "hidden" ? " keyboard-scene--hidden" : ""}`}
+          className={`keyboard-scene${layoutReady ? " keyboard-scene--ready" : ""}`}
           ref={keyboardSceneRef}
         >
           <Suspense fallback={null}>

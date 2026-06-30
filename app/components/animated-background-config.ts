@@ -14,6 +14,7 @@ export const KEYBOARD_SECTION_IDS = {
   techStackHeader: "#tech-stack-header",
   techStack: "#tech-stack",
   boundary: "#keyboard-boundary",
+  techStackZone: "#tech-stack-zone",
 } as const;
 
 /** Push the tech-stack keyboard below the header block in scene space. */
