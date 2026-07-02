@@ -53,7 +53,7 @@ export const STATES: Record<KeyboardSection, SectionStates> = {
     },
     mobile: {
       scale: { x: 0.42, y: 0.42, z: 0.42 },
-      position: { x: 0, y: -160, z: 0 },
+      position: { x: 0, y: 0, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
     },
   },

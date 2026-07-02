@@ -173,16 +173,35 @@ body {
   background-color: black;
 }
 
-/* Spline ParentSize wrapper + canvas — viewport-fixed, never % of a narrow parent */
-.keyboard-scene .keyboard-spline-root,
-.keyboard-scene .keyboard-spline-root > canvas {
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  height: 100svh !important;
-  max-width: none !important;
-  max-height: none !important;
+/* Spline ParentSize wrapper + canvas fill the fixed keyboard scene */
+.keyboard-scene .keyboard-spline-root {
+  width: 100%;
+  height: 100%;
   overflow: hidden;
+}
+
+.keyboard-scene .keyboard-spline-root > canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0;
+  padding: 0;
+}
+
+/* Mobile: keep canvas in the scene box — avoid 100vw / nested fixed mis-sizing the WebGL buffer */
+@media screen and (max-width: 767px) {
+  .keyboard-scene .keyboard-spline-root,
+  .keyboard-scene .keyboard-spline-root > canvas {
+    position: absolute;
+    inset: 0;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    transform: none;
+  }
 }
 
 .keyboard-scene canvas {

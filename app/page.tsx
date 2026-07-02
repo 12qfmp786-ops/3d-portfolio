@@ -17,7 +17,9 @@ function HomeContent() {
   return (
     <>
       {/* Outside smooth-wrapper so position:fixed tracks the viewport, not a transformed scroll layer */}
-      <AnimatedBackground />
+      <div className="keyboard-scene fixed inset-0 h-screen w-full">
+        <AnimatedBackground />
+      </div>
       <div id="smooth-wrapper">
         <div id="smooth-content">
           <KeyboardSections>
