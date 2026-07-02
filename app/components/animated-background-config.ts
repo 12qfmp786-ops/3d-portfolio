@@ -39,6 +39,7 @@ type SectionStates = {
   desktop: TransformProfile;
 };
 
+/** Base transforms at the reference viewport for each breakpoint. */
 export const STATES: Record<KeyboardSection, SectionStates> = {
   hero: {
     desktop: {
@@ -47,13 +48,13 @@ export const STATES: Record<KeyboardSection, SectionStates> = {
       rotation: { x: 0, y: 0, z: 0 },
     },
     tablet: {
-      scale: { x: 0.28, y: 0.28, z: 0.28 },
-      position: { x: 0, y: -100, z: 0 },
+      scale: { x: 0.38, y: 0.38, z: 0.38 },
+      position: { x: 0, y: 10, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
     },
     mobile: {
-      scale: { x: 0.42, y: 0.42, z: 0.42 },
-      position: { x: 0, y: 0, z: 0 },
+      scale: { x: 0.24, y: 0.24, z: 0.24 },
+      position: { x: 0, y: 30, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
     },
   },
@@ -107,39 +108,39 @@ const REF_BY_VIEWPORT: Record<
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
 
-const getScaleOffset = (viewport: Viewport) => {
-  const { width, height, minScale, maxScale } = REF_BY_VIEWPORT[viewport];
-  const wRatio = getViewportWidth() / width;
-  if (viewport === "mobile") {
-    return clamp(wRatio, minScale, maxScale);
-  }
-  const hRatio = getViewportHeight() / height;
+/**
+ * Scale from both width and height so the keyboard grows/shrinks with the
+ * viewport and never overflows a short or narrow screen.
+ */
+const getViewportSizeRatio = (viewport: Viewport) => {
+  const { width: refWidth, height: refHeight, minScale, maxScale } =
+    REF_BY_VIEWPORT[viewport];
+  const wRatio = getViewportWidth() / refWidth;
+  const hRatio = getViewportHeight() / refHeight;
   return clamp(Math.min(wRatio, hRatio), minScale, maxScale);
 };
 
-const getResponsivePosition = (
-  base: TransformProfile["position"],
+/** Vertical bias that tracks viewport height at every breakpoint. */
+const getViewportPositionY = (
+  baseY: number,
   viewport: Viewport,
+  section: KeyboardSection,
 ) => {
-  const { width: refWidth, height: refHeight } = REF_BY_VIEWPORT[viewport];
-  const width = getViewportWidth();
-  const height = getViewportHeight();
+  const { height: refHeight } = REF_BY_VIEWPORT[viewport];
+  const heightDelta = getViewportHeight() - refHeight;
 
-  const wRatio = clamp(width / refWidth, 0.75, 1.15);
-  const x = base.x * wRatio;
+  const yFactor =
+    section === "hero"
+      ? viewport === "mobile"
+        ? 0.05
+        : viewport === "tablet"
+          ? 0.04
+          : 0.04
+      : viewport === "mobile"
+        ? 0.03
+        : 0.04;
 
-  const heightDelta = height - refHeight;
-  let y = base.y;
-
-  if (viewport === "mobile") {
-    y -= heightDelta * 0.14;
-  } else if (viewport === "tablet") {
-    y -= heightDelta * 0.11;
-  } else {
-    y += heightDelta * 0.04;
-  }
-
-  return { x, y, z: base.z };
+  return baseY + heightDelta * yFactor;
 };
 
 export const getKeyboardState = ({
@@ -150,21 +151,13 @@ export const getKeyboardState = ({
   viewport: Viewport;
 }) => {
   const baseTransform = STATES[section][viewport];
-  const scaleOffset = getScaleOffset(viewport);
-  let position = getResponsivePosition(baseTransform.position, viewport);
+  const scaleOffset = getViewportSizeRatio(viewport);
 
-  if (section === "hero" && viewport === "mobile") {
-    const wRatio = clamp(
-      getViewportWidth() / REF_BY_VIEWPORT.mobile.width,
-      0.75,
-      1.15,
-    );
-    position = {
-      x: baseTransform.position.x * wRatio,
-      y: baseTransform.position.y,
-      z: baseTransform.position.z,
-    };
-  }
+  let position = {
+    x: baseTransform.position.x,
+    y: getViewportPositionY(baseTransform.position.y, viewport, section),
+    z: baseTransform.position.z,
+  };
 
   if (section === "techStack") {
     position = {
