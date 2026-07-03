@@ -106,7 +106,7 @@ const WhatIDo = () => {
                 and Three.js.
               </p>
 
-              <h5>Skillset & tools</h5>
+              <h5 className="skillset-tools">Skillset & tools</h5>
               <div className="what-content-flex">
                 <div className="what-tags">JavaScript</div>
                 <div className="what-tags">TypeScript</div>
@@ -145,14 +145,14 @@ const WhatIDo = () => {
             <div className="what-corner"></div>
 
             <div className="what-content-in">
-              <h3>CREATE</h3>
+              <h3 >CREATE</h3>
               {/* <h4>Description</h4> */}
               <p>
                 I create responsive, user-friendly, and visually appealing
                 digital experiences.
               </p>
 
-              <h5>Skillset & tools</h5>
+              <h5 className="skillset-tools">Skillset & tools</h5>
               <div className="what-content-flex">
                 <div className="what-tags">UI Design</div>
                 <div className="what-tags">Responsive Design</div>

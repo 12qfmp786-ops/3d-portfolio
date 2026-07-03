@@ -93,6 +93,19 @@
     opacity: 0;
     animation: whatFlicker 0.5s 1 forwards;
     animation-delay: 1s;
+    /* padding-bottom: 20px; */
+}
+.what-content-in p {
+    padding-bottom: 20px;
+}
+.what-content-in h3 {
+    padding-bottom: 10px;
+}
+what-content-in-development p{
+    padding-bottom: 30px;
+}
+.skillset-tools {
+    padding-bottom: 10px;
 }
 
 @keyframes whatFlicker {

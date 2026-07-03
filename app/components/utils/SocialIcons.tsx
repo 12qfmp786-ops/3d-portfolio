@@ -99,14 +99,14 @@ const SocialIcons = () => {
           </a>
         </span>
       </div>
-      <Link className="resume-button" 
+      {/* <Link className="resume-button" 
       href="https://drive.google.com/file/d/1oyzL94yw-HH31GBICnaUXWWECfBsDrik/view?usp=drive_link"
       target="_blank">
         <HoverLinks text="RESUME" />
         <span>
           <TbNotes />
         </span>
-      </Link>
+      </Link> */}
     </div>
   );
 };
