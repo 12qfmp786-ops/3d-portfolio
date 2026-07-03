@@ -87,6 +87,10 @@ body[data-keyboard-section]:not([data-keyboard-section="hero"]) .navbar-logo .wr
 }
 
 @media only screen and (max-width: 499px) {
+  .navbar-logo .wrapper {
+    display: none !important;
+  }
+
   .header ul {
     flex-direction: column;
     align-items: flex-end;
